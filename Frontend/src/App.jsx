@@ -9,16 +9,32 @@ import Homepage from "./pages/homepage";
 import SigninPage from "./pages/sign-in";
 import SignupPage from "./pages/sign-up";
 import DashboardPage from "./pages/dashboard";
+import Explore from "./pages/explore";
+import MoviesPage from "./pages/movies";
+import BookShowPage from "./pages/bookShow";
 
 import "./App.css";
+import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
+
+
 function App() {
-  return (
+  return ( 
+    <div>
+
+      <Navbar />
     <Routes>
       <Route path="/" element={<Homepage />} />
+      <Route path="/explore" element={<Explore />} />
+      <Route path="/movies" element={<MoviesPage />} />
       <Route path="/dashboard" element={<DashboardPage />} />
       <Route path="/sign-in" element={<SigninPage />} />
       <Route path="/sign-up" element={<SignupPage />} />
+      <Route path="/bookShow" element={<BookShowPage />} />
     </Routes>
+    <Footer />
+
+    </div>
   );
 }
 
