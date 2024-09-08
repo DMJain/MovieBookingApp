@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useLoggedInUser } from "../../hooks/auth.hooks";
 import { useNavigate } from "react-router-dom";
 import AdminDashboard from "./admin-dashboard";
-import UserDashboard from "./user-dashboard";
+import Homepage from "../homepage";
 
 const DashboardPage = () => {
   const { data: user, isLoading } = useLoggedInUser();
@@ -20,7 +20,7 @@ const DashboardPage = () => {
   return (
     <>
       {user.role === "admin" && <AdminDashboard />}
-      {user.role === "user" && <UserDashboard />}
+      {user.role === "user" && <Homepage />}
     </>
   );
 };

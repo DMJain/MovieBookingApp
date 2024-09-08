@@ -12,6 +12,7 @@ import DashboardPage from "./pages/dashboard";
 import Explore from "./pages/explore";
 import MoviesPage from "./pages/movies";
 import BookShowPage from "./pages/bookShow";
+import BookSeatPage from "./pages/bookSeat";
 
 import "./App.css";
 import Navbar from "./components/Navbar";
@@ -29,8 +30,9 @@ function App() {
       <Route path="/movies" element={<MoviesPage />} />
       <Route path="/dashboard" element={<DashboardPage />} />
       <Route path="/sign-in" element={<SigninPage />} />
-      <Route path="/sign-up" element={<SignupPage />} />
+      <Route path="/sign-up" element={<SignupPage />} />  
       <Route path="/bookShow" element={<BookShowPage />} />
+      <Route path="/bookShow/bookseat" element={<BookSeatPage />} /> 
     </Routes>
     <Footer />
 

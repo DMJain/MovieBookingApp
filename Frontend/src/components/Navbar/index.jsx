@@ -1,12 +1,41 @@
-import { memo } from 'react';
-
-
+import { useEffect, useState } from 'react';
+import { useLoggedInUser } from "../../hooks/auth.hooks";
+import { useNavigate } from "react-router-dom";
 
 const Navbar = () => {
+
+  const { data: user, isLoading } = useLoggedInUser();
+  const navigate = useNavigate();
+  const [isLoggedOut, setIsLoggedOut] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      setIsLoggedOut(true);
+    }
+  }, [isLoading, user]);
+
+  const handleSignIN = () => {
+    navigate("/sign-in");
+  }
+
+  const toHome = () => {
+    navigate("/");
+  }
+
+  const handleLogOut = () => {
+    localStorage.removeItem('token');
+    setIsLoggedOut(true);
+    navigate('/');
+    window.location.reload();
+  }
+
+  // console.log('logged IN',isLoggedOut);
+  // console.log('user',user,'isLoading', isLoading);
+
   return (
     <div className="navbar bg-base-100">
       <div className="navbar-start">
-        <a className="btn btn-ghost">
+        <a className="btn btn-ghost" onClick={toHome}>
           <span className="text-4xl underline decoration-primary">
             Movie-Book<span className="text-primary">KARLE</span>
           </span>
@@ -54,8 +83,7 @@ const Navbar = () => {
         </div>
 
 
-
-        <div className="dropdown dropdown-end">
+        {isLoggedOut ? <div className="dropdown dropdown-end">
           <div
             tabIndex={0}
             role="button"
@@ -73,22 +101,14 @@ const Navbar = () => {
             className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow"
           >
             <li>
-              <a className="justify-between">
-                Profile
-                <span className="badge">New</span>
-              </a>
-            </li>
-            <li>
-              <a>Settings</a>
-            </li>
-            <li>
-              <a>Logout</a>
+              <a onClick={handleLogOut}>Logout</a>
             </li>
           </ul>
-        </div>
+        </div> : <button className='btn btn-outline btn-primary' onClick={handleSignIN}> SIGN IN</button>}
+        
       </div>
     </div>
   );
 };
 
-export default memo(Navbar);
+export default Navbar;
