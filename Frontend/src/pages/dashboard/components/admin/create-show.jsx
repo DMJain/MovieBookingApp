@@ -1,14 +1,14 @@
-import { Button } from "@mui/material";
-import Box from "@mui/material/Box";
-import TextField from "@mui/material/TextField";
-import { useState, useEffect } from "react";
+import { Button } from '@mui/material';
+import Box from '@mui/material/Box';
+import TextField from '@mui/material/TextField';
+import { useState, useEffect } from 'react';
 import {
   useCreateShow,
   useGetAllTheaters,
   useGetShowsByMovieId,
   useGetTheaterHall,
-} from "../../../../hooks/theatre.hook";
-import { useGetAllMovies } from "../../../../hooks/movie.hooks";
+} from '../../../../hooks/theatre.hook';
+import { useGetAllMovies } from '../../../../hooks/movie.hooks';
 
 const CreateShowTab = () => {
   const [movieId, setMovieId] = useState(null);
@@ -16,13 +16,13 @@ const CreateShowTab = () => {
   const { data: shows } = useGetShowsByMovieId(movieId);
 
   return (
-    <div style={{ display: "flex" }}>
-      <div style={{ width: "50%" }}>
+    <div style={{ display: 'flex' }}>
+      <div style={{ width: '50%' }}>
         <CreateShowForm movieId={movieId} setMovieId={setMovieId} />
       </div>
-      <div style={{ width: "50%", padding: "10px" }}>
+      <div style={{ width: '50%', padding: '10px' }}>
         {shows?.map((show) => (
-          <li style={{ listStyle: "none" }} key={show._id}>
+          <li style={{ listStyle: 'none' }} key={show._id}>
             <pre>{JSON.stringify(show, null, 2)}</pre>
           </li>
         ))}
@@ -37,9 +37,9 @@ function CreateShowForm({ movieId, setMovieId }) {
 
   const [hallId, setHallId] = useState(null);
 
-  const [price, setPrice] = useState("");
-  const [startTime, setStartTime] = useState("");
-  const [endTime, setEndTime] = useState("");
+  const [price, setPrice] = useState('');
+  const [startTime, setStartTime] = useState('');
+  const [endTime, setEndTime] = useState('');
 
   const { data: theatres } = useGetAllTheaters();
 
@@ -78,63 +78,73 @@ function CreateShowForm({ movieId, setMovieId }) {
 
   return (
     <div>
-      <select value={movieId} onChange={(e) => setMovieId(e.target.value)}>
-        {movies?.map((e) => (
-          <option key={e._id} value={e._id}>
-            {e.title}
-          </option>
-        ))}
-      </select>
-      <select value={theatreId} onChange={(e) => setTheatreId(e.target.value)}>
-        {theatres?.map((e) => (
-          <option key={e._id} value={e._id}>
-            {e.name}
-          </option>
-        ))}
-      </select>
-      {theatreId && (
-        <select value={hallId} onChange={(e) => setHallId(e.target.value)}>
+      
+      <div className="flex flex-col gap-2 p-2 border border-secondary rounded-xl">
+        <h1 className="text-3xl text-secondary">Create Movie:</h1>
+        <div className='flex gap-2'>
+          <select className="select select-primary grow" value={movieId} onChange={(e) => setMovieId(e.target.value)}>
+            {movies?.map((e) => (
+              <option key={e._id} value={e._id}>
+                {e.title}
+              </option>
+            ))}
+          </select>
+          <select className="select select-primary grow" value={theatreId} onChange={(e) => setTheatreId(e.target.value)}>
+            {theatres?.map((e) => (
+              <option key={e._id} value={e._id}>
+                {e.name}
+              </option>
+            ))}
+          </select>
+          <select className="select select-primary grow" value={hallId} onChange={(e) => setHallId(e.target.value)}>
           {halls?.map((e) => (
             <option key={e._id} value={e._id}>
               {e.number} {`(${e.seatingCapacity})`}
             </option>
           ))}
-        </select>
-      )}
-      <Box
-        style={{ marginTop: "20px" }}
-        component="form"
-        onSubmit={handleFormSubmit}
-      >
-        <div className="form-row">
-          <TextField
-            value={price}
-            onChange={(e) => setPrice(e.target.value)}
-            fullWidth
-            label="Price"
-            required
-          />
-          <TextField
-            value={startTime}
-            onChange={(e) => setStartTime(e.target.value)}
-            fullWidth
-            type="datetime-local"
-            label="Start Time"
-            required
-          />
-          <TextField
-            value={endTime}
-            onChange={(e) => setEndTime(e.target.value)}
-            fullWidth
-            type="datetime-local"
-            label="End Time"
-            required
-          />
+          </select>
         </div>
-        <Button disabled={!theatreId} variant="outlined" type="submit">
-          Submit
-        </Button>
-      </Box>
+        <div className="flex grow">
+          <div className="label w-1/2">
+            <span className="text-xl">Price :</span>
+          </div>
+          <input
+            type="number"
+            className="p-3 rounded-lg border-primary bg-base-100 border grow"
+            onChange={(e) => setPrice(e.target.value)}
+          ></input>
+        </div>
+
+        <div className="flex grow">
+          <div className="label w-1/2">
+            <span className="text-xl">Start Time : </span>
+          </div>
+          <input
+            type="datetime-local"
+            className="p-3 rounded-lg border-primary bg-base-100 border grow"
+            onChange={(e) => setStartTime(e.target.value)}
+          ></input>
+        </div>
+        <div className="flex grow">
+          <div className="label w-1/2">
+            <span className="text-xl">End Time : </span>
+          </div>
+          <input
+            type="datetime-local"
+            className="p-3 rounded-lg border-primary bg-base-100 border grow"
+            onChange={(e) => setEndTime(e.target.value)}
+          ></input>
+        </div>
+        <div className='flex grow justify-end'>
+          <button
+            className="btn btn-primary w-1/4"
+            onClick={handleFormSubmit}
+            disabled={!theatreId}
+          >
+            Create Show
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

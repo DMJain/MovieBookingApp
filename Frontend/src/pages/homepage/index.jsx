@@ -1,9 +1,27 @@
+import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+
+import { useGetLatest10Movies} from "../../hooks/movie.hooks";
+import {fetchMovie} from '../../store/slices/movieSlice';
+
 const Homepage = () => {
   // const navigate = useNavigate();
 
   // useEffect(() => {
   //   navigate("/sign-in");
   // }, [navigate]);
+  const{data : movies} = useGetLatest10Movies();
+  const dispatch = useDispatch();
+  
+  const navigate = useNavigate();
+
+  const toExplorePage = () => {
+    navigate("/explore");
+  }
+
+  const toMoviePage = () => {
+    navigate("/movies");
+  };
 
   return (
     <div className="flex flex-col">
@@ -27,84 +45,28 @@ const Homepage = () => {
       {/**movies */}
       <div className="flex flex-col mb-10">
         <div>
-          <h1 className="text-4xl pl-3">Movies</h1>
+          <a className="btn text-4xl pl-3 btn-link no-underline" onClick={toExplorePage}>Movies</a>
         </div>
         <div className="flex gap-3 p-3">
-          <div className="card card-compact bg-base-100 w-96 shadow-lg">
+          {movies?.map((movie) => (<div key={movie._id} className="card card-compact bg-base-100 w-96 shadow-lg">
             <figure>
               <img
-                src="https://img.daisyui.com/images/stock/photo-1606107557195-0e29a4b5b4aa.webp"
+                className="rounded-md h-60 object-cover"
+                src={movie.imageURL}
                 alt="Shoes"
               />
             </figure>
             <div className="card-body">
-              <h2 className="card-title">Shoes!</h2>
-              <p>If a dog chews shoes whose shoes does he choose?</p>
+              <h2 className="card-title">{movie.title}</h2>
+              <p className="h-28 overflow-x-auto">{movie.description}</p>
               <div className="card-actions justify-end">
-                <button className="btn btn-primary">Buy Now</button>
+                <button className="btn btn-primary" onClick={() => {
+                  dispatch(fetchMovie(movie._id));
+                  toMoviePage();
+                }}>View</button>
               </div>
             </div>
-          </div>
-          <div className="card card-compact bg-base-100 w-96 shadow-lg">
-            <figure>
-              <img
-                src="https://img.daisyui.com/images/stock/photo-1606107557195-0e29a4b5b4aa.webp"
-                alt="Shoes"
-              />
-            </figure>
-            <div className="card-body">
-              <h2 className="card-title">Shoes!</h2>
-              <p>If a dog chews shoes whose shoes does he choose?</p>
-              <div className="card-actions justify-end">
-                <button className="btn btn-primary">Buy Now</button>
-              </div>
-            </div>
-          </div>
-          <div className="card card-compact bg-base-100 w-96 shadow-lg">
-            <figure>
-              <img
-                src="https://img.daisyui.com/images/stock/photo-1606107557195-0e29a4b5b4aa.webp"
-                alt="Shoes"
-              />
-            </figure>
-            <div className="card-body">
-              <h2 className="card-title">Shoes!</h2>
-              <p>If a dog chews shoes whose shoes does he choose?</p>
-              <div className="card-actions justify-end">
-                <button className="btn btn-primary">Buy Now</button>
-              </div>
-            </div>
-          </div>
-          <div className="card card-compact bg-base-100 w-96 shadow-lg">
-            <figure>
-              <img
-                src="https://img.daisyui.com/images/stock/photo-1606107557195-0e29a4b5b4aa.webp"
-                alt="Shoes"
-              />
-            </figure>
-            <div className="card-body">
-              <h2 className="card-title">Shoes!</h2>
-              <p>If a dog chews shoes whose shoes does he choose?</p>
-              <div className="card-actions justify-end">
-                <button className="btn btn-primary">Buy Now</button>
-              </div>
-            </div>
-          </div>
-          <div className="card card-compact bg-base-100 w-96 shadow-lg">
-            <figure>
-              <img
-                src="https://img.daisyui.com/images/stock/photo-1606107557195-0e29a4b5b4aa.webp"
-                alt="Shoes"
-              />
-            </figure>
-            <div className="card-body">
-              <h2 className="card-title">Shoes!</h2>
-              <p>If a dog chews shoes whose shoes does he choose?</p>
-              <div className="card-actions justify-end">
-                <button className="btn btn-primary">Buy Now</button>
-              </div>
-            </div>
-          </div>
+          </div>))}
         </div>
       </div>
     </div>

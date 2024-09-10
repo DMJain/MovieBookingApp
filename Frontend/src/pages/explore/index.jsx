@@ -1,4 +1,13 @@
+import { useNavigate } from "react-router-dom";
+import { useGetAllMovies } from "../../hooks/movie.hooks";
+
 const Explore = () => {
+  const navigate = useNavigate();
+  const handleNavigation = () => {
+    navigate("/movies")
+  }
+  const { data: movies } = useGetAllMovies();
+  console.log(movies);
   return (
     <div className="drawer lg:drawer-open">
       <input id="my-drawer-2" type="checkbox" className="drawer-toggle" />
@@ -33,20 +42,30 @@ const Explore = () => {
         </label>
         {/* Page content here */}
         <div className="flex flex-col w-full items-center gap-10 p-10">
-          <div className="grid grid-cols-4 gap-3 w-full">
-            <div className="skeleton h-32"></div>
-            <div className="skeleton h-32"></div>
-            <div className="skeleton h-32"></div>
-            <div className="skeleton h-32"></div>
-            <div className="skeleton h-32"></div>
-            <div className="skeleton h-32"></div>
-            <div className="skeleton h-32"></div>
-            <div className="skeleton h-32"></div>
-            <div className="skeleton h-32"></div>
-            <div className="skeleton h-32"></div>
-            <div className="skeleton h-32"></div>
-            <div className="skeleton h-32"></div>
-          </div>
+          {movies && <div className="grid grid-cols-4 gap-3 w-full">
+            {movies.map((movie) => (
+              <div key={movie._id} className="card image-full h-64 shadow-xl">
+              <figure>
+                <img
+                  src={movie.imageURL}
+                  alt="Shoes"
+                  />
+                  
+              </figure>
+              <div className="card-body">
+                <h2 className="card-title">{movie.title}</h2>
+                <p className="overflow-y-auto h-24">{movie.description}</p>
+                <div className="card-actions justify-end">
+                  <button className="btn btn-primary" onClick={handleNavigation}>Buy Now</button>
+                </div>
+              </div>
+            </div>
+            ))}
+          
+          </div>}
+          {(!movies || !movies.length) && (
+            <p className="text-4xl text-se">Loading movies...</p>  // Or display a message if no movies found
+          )}
           <div className="join ">
             <button className="join-item btn">«</button>
             <button className="join-item btn">Page 22</button>

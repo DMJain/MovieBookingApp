@@ -1,10 +1,19 @@
+import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+
 const BookShowPage = () => {
+  const navigate = useNavigate();
+  const movie = useSelector((state) => state.movie);
+
+  const handleNavigation = () => {
+    navigate("/bookShow/bookseat")
+  }
   return (
     <div className="mt-5 p-3">
       {/* Movie Header */}
       <div className="bg-base-200 p-3 mb-3 rounded-xl">
         <div className="">
-          <h1 className="text-5xl">Movie Name</h1>
+          <h1 className="text-5xl">{movie.title}</h1>
         </div>
         <div className="flex gap-2 pt-4 pb-2">
             <div className="badge badge-primary badge-outline">primary</div>
@@ -68,7 +77,7 @@ const BookShowPage = () => {
                         <p>Location</p>
                     </div>
                     <div className="p-5 grid grid-cols-12 gap-4 w-full">
-                        <button className="btn btn-outline btn-info max-w-fit">Timming</button>
+                        <button className="btn btn-outline btn-info max-w-fit" onClick={handleNavigation}>Timming</button>
                         <button className="btn btn-outline btn-info max-w-fit">Timming</button>
                         <button className="btn btn-outline btn-info max-w-fit">Timming</button>
                         <button className="btn btn-outline btn-info max-w-fit">Timming</button>

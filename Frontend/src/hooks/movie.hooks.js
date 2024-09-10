@@ -37,3 +37,14 @@ export const useGetAllMovies = () => {
   });
   return movies;
 };
+
+export const useGetLatest10Movies = () => {
+  const movies = useQuery({
+    queryKey: ["movies"],
+    queryFn: async ({sort}) => {
+      const { data } = await apiInstance.get("/api/movies", {sort});
+      return data.data;
+    },
+  });
+  return movies;
+};
