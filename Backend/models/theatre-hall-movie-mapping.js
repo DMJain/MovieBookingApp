@@ -12,12 +12,16 @@ const theatreHallMovieMappingSchema = new Schema(
       required: true,
       ref: 'theatreHall',
     },
+    showDate: {
+      type: String,
+      required: true,
+    },
     startTimestamp: {
-      type: Number,
+      type: String,
       required: true,
     },
     endTimestamp: {
-      type: Number,
+      type: String,
       required: true,
     },
     price: {

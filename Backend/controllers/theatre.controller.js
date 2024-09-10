@@ -63,13 +63,14 @@ async function createShow(req, res) {
   if (validationResult.error)
     return res.status(400).json({ error: validationResult.error })
 
-  const { endTimestamp, movieId, price, startTimestamp, theatreHallId } =
+  const { endTimestamp, movieId, price,showDate, startTimestamp, theatreHallId } =
     validationResult.data
 
   const hall = await TheatreService.createShow({
     endTimestamp,
     movieId,
     price,
+    showDate,
     startTimestamp,
     theatreHallId,
   })

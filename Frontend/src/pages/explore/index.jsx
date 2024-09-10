@@ -1,13 +1,18 @@
+import { useDispatch } from "react-redux";
+
 import { useNavigate } from "react-router-dom";
 import { useGetAllMovies } from "../../hooks/movie.hooks";
+import {fetchMovie} from '../../store/slices/movieSlice';
 
 const Explore = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const handleNavigation = () => {
     navigate("/movies")
   }
   const { data: movies } = useGetAllMovies();
   console.log(movies);
+
   return (
     <div className="drawer lg:drawer-open">
       <input id="my-drawer-2" type="checkbox" className="drawer-toggle" />
@@ -56,7 +61,10 @@ const Explore = () => {
                 <h2 className="card-title">{movie.title}</h2>
                 <p className="overflow-y-auto h-24">{movie.description}</p>
                 <div className="card-actions justify-end">
-                  <button className="btn btn-primary" onClick={handleNavigation}>Buy Now</button>
+                  <button className="btn btn-primary" onClick={() => {
+                  dispatch(fetchMovie(movie._id));
+                  handleNavigation();
+                }}>View Now</button>
                 </div>
               </div>
             </div>

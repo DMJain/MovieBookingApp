@@ -21,8 +21,9 @@ const createTheatreHallSchema = z.object({
 const createTheatreHallMovieMappingSchema = z.object({
   movieId: z.string(),
   theatreHallId: z.string(),
-  startTimestamp: z.number(),
-  endTimestamp: z.number(),
+  showDate: z.string(),
+  startTimestamp: z.string(),
+  endTimestamp: z.string(),
   price: z.number(),
 })
 

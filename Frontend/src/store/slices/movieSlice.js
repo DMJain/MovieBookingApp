@@ -34,6 +34,7 @@ const moveiSlice = createSlice({
             state.isLoading = true;
         });
         builder.addCase(fetchMovie.fulfilled, (state, action) => {
+            state._id = action.payload._id;
             state.isLoading = false;
             state.title = action.payload.title;
             state.description = action.payload.description;

@@ -1,6 +1,4 @@
-import { Button } from '@mui/material';
-import Box from '@mui/material/Box';
-import TextField from '@mui/material/TextField';
+
 import { useState, useEffect } from 'react';
 import {
   useCreateShow,
@@ -38,6 +36,7 @@ function CreateShowForm({ movieId, setMovieId }) {
   const [hallId, setHallId] = useState(null);
 
   const [price, setPrice] = useState('');
+  const [showDate, setShowDate] = useState('');
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
 
@@ -70,8 +69,9 @@ function CreateShowForm({ movieId, setMovieId }) {
     await createShowAsync({
       movieId,
       theatreHallId: hallId,
-      startTimestamp: new Date(startTime).getTime(),
-      endTimestamp: new Date(endTime).getTime(),
+      showDate: showDate,
+      startTimestamp: startTime,
+      endTimestamp: endTime,
       price: Number(price),
     });
   };
@@ -82,27 +82,27 @@ function CreateShowForm({ movieId, setMovieId }) {
       <div className="flex flex-col gap-2 p-2 border border-secondary rounded-xl">
         <h1 className="text-3xl text-secondary">Create Movie:</h1>
         <div className='flex gap-2'>
-          <select className="select select-primary grow" value={movieId} onChange={(e) => setMovieId(e.target.value)}>
+          {movies?.length > 0 && <select className="select select-primary grow" value={movieId} onChange={(e) => setMovieId(e.target.value)}>
             {movies?.map((e) => (
               <option key={e._id} value={e._id}>
                 {e.title}
               </option>
             ))}
-          </select>
-          <select className="select select-primary grow" value={theatreId} onChange={(e) => setTheatreId(e.target.value)}>
+          </select>}
+          {theatres?.length  >0 && <select className="select select-primary grow" value={theatreId} onChange={(e) => setTheatreId(e.target.value)}>
             {theatres?.map((e) => (
               <option key={e._id} value={e._id}>
                 {e.name}
               </option>
             ))}
-          </select>
-          <select className="select select-primary grow" value={hallId} onChange={(e) => setHallId(e.target.value)}>
+          </select>}
+          {halls?.length > 0 && <select className="select select-primary grow" value={hallId} onChange={(e) => setHallId(e.target.value)}>
           {halls?.map((e) => (
             <option key={e._id} value={e._id}>
               {e.number} {`(${e.seatingCapacity})`}
             </option>
           ))}
-          </select>
+          </select>}
         </div>
         <div className="flex grow">
           <div className="label w-1/2">
@@ -117,10 +117,21 @@ function CreateShowForm({ movieId, setMovieId }) {
 
         <div className="flex grow">
           <div className="label w-1/2">
+            <span className="text-xl">Date : </span>
+          </div>
+          <input
+            type="date"
+            className="p-3 rounded-lg border-primary bg-base-100 border grow"
+            onChange={(e) => setShowDate(e.target.value)}
+          ></input>
+        </div>
+
+        <div className="flex grow">
+          <div className="label w-1/2">
             <span className="text-xl">Start Time : </span>
           </div>
           <input
-            type="datetime-local"
+            type="time"
             className="p-3 rounded-lg border-primary bg-base-100 border grow"
             onChange={(e) => setStartTime(e.target.value)}
           ></input>
@@ -130,7 +141,7 @@ function CreateShowForm({ movieId, setMovieId }) {
             <span className="text-xl">End Time : </span>
           </div>
           <input
-            type="datetime-local"
+            type="time"
             className="p-3 rounded-lg border-primary bg-base-100 border grow"
             onChange={(e) => setEndTime(e.target.value)}
           ></input>

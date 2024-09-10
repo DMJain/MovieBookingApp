@@ -82,7 +82,9 @@ export const useGetShowsByMovieId = (movieId) => {
     queryKey: ["shows", movieId],
     enabled: !!movieId,
     queryFn: async function () {
+      console.log("movieId", movieId);
       const { data } = await apiInstance.get(`/api/shows/${movieId}`);
+      console.log("data", data);
 
       return data.data;
     },
@@ -97,6 +99,7 @@ export const useCreateShow = () => {
     mutationFn: async function ({
       movieId,
       theatreHallId,
+      showDate,
       startTimestamp,
       endTimestamp,
       price,
@@ -104,6 +107,7 @@ export const useCreateShow = () => {
       const { data } = await apiInstance.post("/admin/shows", {
         movieId,
         theatreHallId,
+        showDate,
         startTimestamp,
         endTimestamp,
         price,
