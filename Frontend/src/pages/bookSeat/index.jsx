@@ -1,16 +1,25 @@
-import { useSelector } from 'react-redux';
-import { useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { setBookingDetails} from '../../store/slices/bookingSlice';
 
 const BookSeatPage = () => {
 
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const movie = useSelector((state) => state.movie);
   const hall = useSelector((state) => state.hall);
   const [selectedSeats, setSelectedSeats] = useState([]);
 
+  useEffect(() => {
+    if (movie._id === null) {
+      navigate("/explore");
+    }
+  }, []);
+
   const handlePayment = async () => {
-    navigate("/checkout");
+    dispatch(setBookingDetails({selectedSeats, totalPrice: hall.price * selectedSeats.length}));
+    navigate(`/bookShow/${hall.showId}/bookseat/checkout`);
   }
 
   const handleSeletedSeats = (index) => {

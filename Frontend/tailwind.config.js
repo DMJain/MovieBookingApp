@@ -10,34 +10,28 @@ export default {
   
   // daisyUI config (optional - here are the default values)
   daisyui: {
-    themes: [
-      {
-        mythemeLight: {
-          "primary": "#3b82f6",
-          "secondary": "#1e3a8a",
-          "accent": "#86198f",
-          "neutral": "#3b82f6",
-          "base-100": "#f5f5f4",
-          "info": "#3b82f6",
-          "success": "#22c55e",
-          "warning": "#fbbf24",
-          "error": "#dc2626",
-          },
+    themes: [{
+      mytheme: {
+        
+"primary": "#00afff",
+        
+"secondary": "#0074ff",
+        
+"accent": "#1e40af",
+        
+"neutral": "#1e1500",
+        
+"base-100": "#f1ffff",
+        
+"info": "#0088ff",
+        
+"success": "#00b985",
+        
+"warning": "#e57c00",
+        
+"error": "#ff1e5b",
         },
-      {
-        mythemeDard:{
-          "primary": "#3b82f6",
-          "secondary": "#1e3a8a",
-          "accent": "#86198f",
-          "neutral": "#3b82f6",
-          "base-100": "#1f2937",
-          "info": "#3b82f6",
-          "success": "#00f872",
-          "warning": "#fbbf24",
-          "error": "#dc2626",
-          }
-        }
-      ],
+      }, "luxury"],
     },
     plugins: [
     require('daisyui'),

@@ -7,10 +7,12 @@ import {fetchMovie} from '../../store/slices/movieSlice';
 const Explore = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const handleNavigation = () => {
-    navigate("/movies")
-  }
+  
   const { data: movies } = useGetAllMovies();
+
+  const handleNavigation = (id) => {
+    navigate(`/movies/${id}`)
+  }
   console.log(movies);
 
   return (
@@ -63,7 +65,7 @@ const Explore = () => {
                 <div className="card-actions justify-end">
                   <button className="btn btn-primary" onClick={() => {
                   dispatch(fetchMovie(movie._id));
-                  handleNavigation();
+                  handleNavigation(movie._id);
                 }}>View Now</button>
                 </div>
               </div>

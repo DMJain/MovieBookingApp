@@ -19,6 +19,7 @@ import "./App.css";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import CheckOutPage from "./pages/checkoutPage";
+import OnSuccess from "./pages/checkoutPage/conversionPage/OnSuccess";
 
 
 function App() {
@@ -29,14 +30,15 @@ function App() {
     <Routes>
       <Route path="/" element={<Homepage />} />
       <Route path="/explore" element={<Explore />} />
-      <Route path="/movies" element={<MoviesPage />} />
+      <Route path="/movies/:id" element={<MoviesPage />} />
       <Route path="/dashboard" element={<DashboardPage />} />
       <Route path="/sign-in" element={<SigninPage />} />
       <Route path="/sign-up" element={<SignupPage />} />  
-      <Route path="/bookShow" element={<BookShowPage />} />
-      <Route path="/bookShow/bookseat" element={<BookSeatPage />} /> 
+      <Route path="/:location/movies/:movieId/bookShow" element={<BookShowPage />} />
+      <Route path="/bookShow/:bookShowId/bookseat" element={<BookSeatPage />} /> 
       <Route path="/userDashboard" element={<UserDashboard/>} />
-      <Route path="/checkout" element={<CheckOutPage /> } />
+      <Route path="/bookShow/:bookShowId/bookseat/checkout" element={<CheckOutPage /> } />
+      <Route path="success" element={<OnSuccess />} />
       <Route path="*" element={<h1>Not Found</h1>} />
     </Routes>
     <Footer />

@@ -19,8 +19,8 @@ const Homepage = () => {
     navigate("/explore");
   }
 
-  const toMoviePage = () => {
-    navigate("/movies");
+  const toMoviePage = (id) => {
+    navigate(`/movies/${id}`);
   };
 
   return (
@@ -62,7 +62,7 @@ const Homepage = () => {
               <div className="card-actions justify-end">
                 <button className="btn btn-primary" onClick={() => {
                   dispatch(fetchMovie(movie._id));
-                  toMoviePage();
+                  toMoviePage(movie._id);
                 }}>View</button>
               </div>
             </div>

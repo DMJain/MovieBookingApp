@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
@@ -6,8 +7,14 @@ const MoviesPage = () => {
   const movie = useSelector((state) => state.movie);
   const navigate = useNavigate();
 
+  useEffect(() => {
+    if (movie._id === null) {
+      navigate("/explore");
+    }
+  }, []);
+
   const handleNavigation = () => {
-    navigate("/bookShow")
+    navigate(`/Nagpur/movies/${movie._id}/bookShow`)
   }
 
   return (

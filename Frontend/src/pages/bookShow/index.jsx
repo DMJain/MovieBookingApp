@@ -81,7 +81,7 @@ const BookShowPage = () => {
 
   const handleNavigation = (showId,seatNumber,price, showTiming, showDate, theatreName) => {
     dispatch(setShowDetails({ showId, price, seatNumber, showDate , showTiming, theatreName}));
-    navigate('/bookShow/bookseat');
+    navigate(`/bookShow/${showId}/bookseat`);
   };
 
   const handleDateChange = (event) => {
