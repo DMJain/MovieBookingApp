@@ -1,75 +1,96 @@
 import { useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { apiInstance } from '../../api';
 import { useEffect, useState } from 'react';
+import { setShowDetails} from '../../store/slices/hallSlice';
 
-const filterShowDates = (shows) => {
-  const showDates = [];
-  const dataSet = new Set();
+
+const filterData = (shows, selectedDate) => {
+  console.log('shows', shows);
+  const returnedData = {};
   shows.forEach((show) => {
-    const date = show.showDate;
-    if (!dataSet.has(date)) {
-      showDates.push(date);
-      dataSet.add(date);
+    if (show.showDate === selectedDate) {
+      const theaterId = show.theatreHallId.theatreId._id;
+
+      if (!returnedData[theaterId]) {
+        returnedData[theaterId] = {
+          theatreName: show.theatreHallId.theatreId.name,
+          theatreId: show.theatreHallId.theatreId._id,
+          location: `${show.theatreHallId.theatreId.name}, ${show.theatreHallId.theatreId.plot}, ${show.theatreHallId.theatreId.street}, ${show.theatreHallId.theatreId.city}, ${show.theatreHallId.theatreId.state}, ${show.theatreHallId.theatreId.country}, ${show.theatreHallId.theatreId.pinCode} `,
+          shows: [],
+        };
+      }
+
+      returnedData[theaterId].shows.push({
+        _id: show._id,
+        price: show.price,
+        seatNumber: show.theatreHallId.seatingCapacity,
+        startTime: show.startTimestamp,
+        endTime: show.endTimestamp,
+      });
     }
   });
-  return showDates;
-}
 
-const filterTheaterData = (shows) => {
-  const theaterDatas = [];
-  const dataSet = new Set();
-  shows.forEach((show) => {
-    const theaterData = {
-      _id: show.theatreHallId.theatreId._id,
-      name: show.theatreHallId.theatreId.name,
-      location: show.theatreHallId.theatreId.city,
-    };
-    if (!dataSet.has(theaterData._id)) {
-      theaterDatas.push(theaterData);
-      dataSet.add(theaterData._id);
-    }
-  });
-  return theaterDatas;
-}
+  console.log('returnedData', returnedData);
+  console.log('returnedData type', typeof returnedData);
+  return returnedData;
+};
 
 const BookShowPage = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const movie = useSelector((state) => state.movie);
   const [isLoading, setIsLoading] = useState(false);
 
-  const [shows, setShows] = useState([]);
-  const [showDates, setShowDates] = useState([]);
   const [theaterDatas, setTheaterDatas] = useState([]);
-
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().slice(0, 10));
 
   useEffect(() => {
     setIsLoading(true);
     const fetchShows = async () => {
       try {
-        console.log('movie', movie);
+        console.log('movie', movie._id);
+        if (movie._id === null) {
+          setIsLoading(false);
+          navigate('/explore');
+          return;
+        }
         const { data } = await apiInstance.get(`/api/shows/${movie._id}`);
-        console.log('data', data.data);
-        setShows(data.data);
-        setShowDates(filterShowDates(data.data));
-        setTheaterDatas(filterTheaterData(data.data));
+        // Process data using filterData
+        const processedData = filterData(data.data, selectedDate);
+
+        // Convert the object to an array for mapping in JSX
+        const theaterDataArray = Object.values(processedData); // Get an array of theater objects
+        setTheaterDatas(theaterDataArray); // Set the state with the array
+
         setIsLoading(false);
+        console.log('isLoading', isLoading);
       } catch (error) {
         console.log('error', error);
       }
     };
     fetchShows();
-  }, []);
+  }, [selectedDate]);
+  
+  const today = new Date();
+  const minDate = today.toISOString().slice(0, 10);
+  const maxDate = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
 
-  console.log('shows', shows);
-  console.log('showDates', showDates);
   console.log('theaterDatas', theaterDatas);
+  console.log('theaterDatas type',typeof theaterDatas);
 
-  const handleNavigation = () => {
+  const handleNavigation = (showId,seatNumber,price, showTiming, showDate, theatreName) => {
+    dispatch(setShowDetails({ showId, price, seatNumber, showDate , showTiming, theatreName}));
     navigate('/bookShow/bookseat');
   };
+
+  const handleDateChange = (event) => {
+    setSelectedDate(event.target.value);
+  };
+
   return (
-    <div className="mt-5 p-3">
+    <div className="mt-5 p-3 flex justify-center items-center">
+      <div className='w-4/5'>
       {/* Movie Header */}
       <div className="bg-base-200 p-3 mb-3 rounded-xl">
         <div className="">
@@ -82,10 +103,9 @@ const BookShowPage = () => {
       </div>
       <div className="flex justify-between mb-5">
         <div>
-          <div className="join">
-            <button className="join-item btn">«</button>
-            <button className="join-item btn">Page 22</button>
-            <button className="join-item btn">»</button>
+          <div className="">
+            <input type="date" defaultValue={selectedDate} className='p-3 rounded-full border-base-300 text-base-300 bg-base-100 border grow' onChange={handleDateChange} min={minDate}
+        max={maxDate}></input>
           </div>
         </div>
         <div className="flex">
@@ -123,63 +143,32 @@ const BookShowPage = () => {
         </div>
       </div>
       {/* theater & show */}
-      {isLoading ? (<h1 className='text-4xl'>LOADING</h1>) : (<div>
+      {isLoading ? (<h1 className='text-4xl'>LOADING</h1>) : (
+      <div className=''>
         <div>
-          {/* Theater Card with SHow */}
+          {theaterDatas.length > 0 ? (
+            console.log('theaterDatas', typeof theaterDatas),
+            theaterDatas.map((theaterData) => (
+            <div key={theaterData.theatreId} className="bordered border-2 shadow-lg bg-base-100 flex rounded-xl mb-2">
+              <div className="border-r-2 border-base-300 h-48 w-1/5 flex justify-center items-center p-8">
+                <h2 className="text-3xl">{theaterData.theatreName}</h2>  {/* Access theatre name from theaterData */}
+                <div className="tooltip text-sm" data-tip={theaterData.location}>
+                  <button className="">&#9432;</button>
+                </div>
+              </div>
+              <div className="p-5 grid grid-cols-12 gap-4 w-full">
+                {theaterData.shows.map((show) => (
+                  <button key={show._id} className="btn btn-outline btn-info max-w-fit" onClick={() => (handleNavigation(show._id, show.seatNumber, show.price, show.startTime, selectedDate, theaterData.theatreName))}>
+                    {show.startTime}  {/* Display show timings if available */}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))) : (<h1 className='text-4xl'>No Shows Available</h1>)}
 
-          { theaterDatas && theaterDatas.length > 0 && theaterDatas.map((theaterData) => (
-            <div key={theaterData._id}className="bordered border-2 shadow-sm bg-base-100 flex">
-            <div className="border-r-2 border-base-300 h-48 w-2/12 flex flex-col justify-center p-8">
-              <h2 className="text-3xl">{theaterData.name}</h2>
-              <p>Location</p>
-            </div>
-            <div className="p-5 grid grid-cols-12 gap-4 w-full">
-              <button
-                className="btn btn-outline btn-info max-w-fit"
-                onClick={handleNavigation}
-              >
-                Timming
-              </button>
-              <button className="btn btn-outline btn-info max-w-fit">
-                Timming
-              </button>
-              <button className="btn btn-outline btn-info max-w-fit">
-                Timming
-              </button>
-              <button className="btn btn-outline btn-info max-w-fit">
-                Timming
-              </button>
-              <button className="btn btn-outline btn-info max-w-fit">
-                Timming
-              </button>
-              <button className="btn btn-outline btn-info max-w-fit">
-                Timming
-              </button>
-              <button className="btn btn-outline btn-info max-w-fit">
-                Timming
-              </button>
-              <button className="btn btn-outline btn-info max-w-fit">
-                Timming
-              </button>
-              <button className="btn btn-outline btn-info max-w-fit">
-                Timming
-              </button>
-              <button className="btn btn-outline btn-info max-w-fit">
-                Timming
-              </button>
-              <button className="btn btn-outline btn-info max-w-fit">
-                Timming
-              </button>
-              <button className="btn btn-outline btn-info max-w-fit">
-                Timming
-              </button>
-              <button className="btn btn-outline btn-info max-w-fit">
-                Timming
-              </button>
-            </div>
-          </div>))}
         </div>
       </div>)}
+      </div>
     </div>
   );
 };

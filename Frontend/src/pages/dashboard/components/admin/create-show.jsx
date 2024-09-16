@@ -76,6 +76,10 @@ function CreateShowForm({ movieId, setMovieId }) {
     });
   };
 
+  const today = new Date();
+  const minDate = today.toISOString().slice(0, 10);
+  const maxDate = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+
   return (
     <div>
       
@@ -123,6 +127,8 @@ function CreateShowForm({ movieId, setMovieId }) {
             type="date"
             className="p-3 rounded-lg border-primary bg-base-100 border grow"
             onChange={(e) => setShowDate(e.target.value)}
+            min={minDate}
+            max={maxDate}
           ></input>
         </div>
 

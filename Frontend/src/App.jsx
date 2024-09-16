@@ -13,10 +13,12 @@ import Explore from "./pages/explore";
 import MoviesPage from "./pages/movies";
 import BookShowPage from "./pages/bookShow";
 import BookSeatPage from "./pages/bookSeat";
+import UserDashboard from "./pages/dashboard/user-dashboard";
 
 import "./App.css";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import CheckOutPage from "./pages/checkoutPage";
 
 
 function App() {
@@ -33,6 +35,9 @@ function App() {
       <Route path="/sign-up" element={<SignupPage />} />  
       <Route path="/bookShow" element={<BookShowPage />} />
       <Route path="/bookShow/bookseat" element={<BookSeatPage />} /> 
+      <Route path="/userDashboard" element={<UserDashboard/>} />
+      <Route path="/checkout" element={<CheckOutPage /> } />
+      <Route path="*" element={<h1>Not Found</h1>} />
     </Routes>
     <Footer />
 

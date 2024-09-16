@@ -2,13 +2,13 @@ const { z } = require('zod')
 
 const bookingCreationValidationSchema = z.object({
   showId: z.string(),
-  seatNumber: z.number().min(1),
+  seatNumber: z.array(z.number().min(1)),
 })
 
 const verifyPaymentValidationSchema = z.object({
-  paymentId: z.string(),
+  showId: z.string(),
   orderId: z.string(),
-  signature: z.string(),
+  seatNumber: z.array(z.number()),
 })
 
 module.exports = {
