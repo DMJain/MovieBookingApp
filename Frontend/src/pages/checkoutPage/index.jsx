@@ -1,10 +1,11 @@
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { load } from '@cashfreepayments/cashfree-js';
 import { apiInstance } from '../../api';
 import { useEffect } from 'react';
+import { setOrderID } from '../../store/slices/bookingSlice';
 
 const CheckOutPage = () => {
   const movie = useSelector((state) => state.movie);
@@ -12,15 +13,15 @@ const CheckOutPage = () => {
   const booking = useSelector((state) => state.booking);
   const [convenienceFees, setConvenienceFees] = useState(0);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   let cashfree;
-  const insitialzeSDK = async function () {
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-      cashfree = await load({
-        mode: 'sandbox',
-      });
-    };
-    insitialzeSDK();
+var initializeSDK = async function () {          
+    cashfree = await load({
+        mode: "sandbox"
+    });
+};
+initializeSDK();
 
   useEffect(() => {
     if (booking.selectedSeats.length === 0) {
@@ -33,20 +34,18 @@ const CheckOutPage = () => {
       navigate('/explore');
     }
 
-    
-
     setConvenienceFees(30);
   }, []);
 
-  const [orderId, setOrderId] = useState('');
   const orderIdRef = useRef('');
 
   const getSessionId = async () => {
     try {
-        const totalPrice = Number.parseFloat(booking.totalPrice) +
-                       Number.parseFloat(convenienceFees) +
-                       Number.parseFloat(convenienceFees * 0.18);
-    const formattedTotalPrice = totalPrice.toFixed(2);
+      const totalPrice =
+        Number.parseFloat(booking.totalPrice) +
+        Number.parseFloat(convenienceFees) +
+        Number.parseFloat(convenienceFees * 0.18);
+      const formattedTotalPrice = totalPrice.toFixed(2);
       let res = await apiInstance.post(`/booking/create`, {
         showId: hall.showId,
         seatNumber: booking.selectedSeats,
@@ -55,7 +54,6 @@ const CheckOutPage = () => {
 
       if (res.data && res.data.payment_session_id) {
         console.log('/payment response', res.data);
-        setOrderId(res.data.order_id);
         orderIdRef.current = res.data.order_id;
         return res.data.payment_session_id;
       }
@@ -66,15 +64,17 @@ const CheckOutPage = () => {
 
   const verifyPayment = async (orderIdRef) => {
     try {
+      console.log("in verify payment")
+      dispatch(setOrderID({ orderId: orderIdRef }));
       let res = await apiInstance.post(`/booking/verify-payment`, {
         showId: hall.showId,
         orderId: orderIdRef,
         seatNumber: booking.selectedSeats,
       });
-
       if (res && res.data) {
         console.log('payment verified', res.data);
-        navigate('/success');
+        if (res.data.order_status === 'PAID') navigate('/success');
+        else navigate('/failure');
       }
     } catch (error) {
       console.log(error);
@@ -85,10 +85,11 @@ const CheckOutPage = () => {
     e.preventDefault();
     try {
       let sessionId = await getSessionId();
+      console.log('sessionId', sessionId);
       let checkoutOptions = {
         paymentSessionId: sessionId,
-        redirectTarget: '_modal',
-      };
+        redirectTarget: "_modal",
+    };
 
       cashfree.checkout(checkoutOptions).then((res) => {
         console.log('payment initialized');
@@ -106,7 +107,11 @@ const CheckOutPage = () => {
           <div className="border rounded-xl border-secondary shadow-lg flex gap-5">
             <div className="w-6/12 flex justify-center items-center bg-primary p-5 rounded-xl">
               <div className="h-80 w-56 rounded-xl">
-                <img src={movie.imageURL} alt="" className='object-fill w-full h-full rounded-xl' />
+                <img
+                  src={movie.imageURL}
+                  alt=""
+                  className="object-fill w-full h-full rounded-xl"
+                />
               </div>
             </div>
             <div className="flex flex-col gap-5 w-full p-5">
@@ -114,8 +119,12 @@ const CheckOutPage = () => {
                 <h1 className="text-6xl">{movie.title}</h1>
               </div>
               <div className="flex gap-2">
-                <div className="badge badge-primary badge-outline">{movie.language}</div>
-                <div className="badge badge-primary badge-outline">{movie.durationInMinutes} min</div>
+                <div className="badge badge-primary badge-outline">
+                  {movie.language}
+                </div>
+                <div className="badge badge-primary badge-outline">
+                  {movie.durationInMinutes} min
+                </div>
               </div>
               <div>
                 <div>
@@ -130,12 +139,15 @@ const CheckOutPage = () => {
                   <h1 className="text-3xl">Time:{hall.showTiming}</h1>
                 </div>
               </div>
-              <div className='text-3xl'>Seat Number/s :
+              <div className="text-3xl">
+                Seat Number/s :
                 <div className="flex gap-2">
-                    {booking.selectedSeats.map((seat, index) => (
-                        <div key={index} className="">{seat}</div>
-                    ))}
-                </div>    
+                  {booking.selectedSeats.map((seat, index) => (
+                    <div key={index} className="">
+                      {seat}
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
@@ -152,7 +164,9 @@ const CheckOutPage = () => {
                   <div className="text-xl font-medium">
                     Ticket Price for {booking.selectedSeats.length}:
                   </div>
-                  <div>{Number.parseFloat(booking.totalPrice).toFixed(2)} INR</div>
+                  <div>
+                    {Number.parseFloat(booking.totalPrice).toFixed(2)} INR
+                  </div>
                 </div>
                 <div>
                   <details className="collapse rounded-none">
@@ -161,30 +175,51 @@ const CheckOutPage = () => {
                         <div className="text-xl font-medium hover:cursor-pointer">
                           Convenience fees …
                         </div>
-                        <div>{ Number.parseFloat(convenienceFees + (convenienceFees * 0.18)).toFixed(2)} INR</div>
+                        <div>
+                          {Number.parseFloat(
+                            convenienceFees + convenienceFees * 0.18
+                          ).toFixed(2)}{' '}
+                          INR
+                        </div>
                       </div>
                     </summary>
                     <div className="collapse-content text-slate-500">
                       <div className="flex justify-between">
                         <div>Base Fee :</div>
-                        <div>{Number.parseFloat(convenienceFees).toFixed(2)} INR</div>
+                        <div>
+                          {Number.parseFloat(convenienceFees).toFixed(2)} INR
+                        </div>
                       </div>
                       <div className="flex justify-between">
-                        <div>cGST <span className='text-xs'>@9%</span> :</div>
-                        <div>{Number.parseFloat(convenienceFees * 0.09).toFixed(2)} INR</div>
+                        <div>
+                          cGST <span className="text-xs">@9%</span> :
+                        </div>
+                        <div>
+                          {Number.parseFloat(convenienceFees * 0.09).toFixed(2)}{' '}
+                          INR
+                        </div>
                       </div>
                       <div className="flex justify-between">
-                        <div>sGST <span className='text-xs'>@9%</span> :</div>
-                        <div>{Number.parseFloat(convenienceFees * 0.09).toFixed(2)} INR</div>
+                        <div>
+                          sGST <span className="text-xs">@9%</span> :
+                        </div>
+                        <div>
+                          {Number.parseFloat(convenienceFees * 0.09).toFixed(2)}{' '}
+                          INR
+                        </div>
                       </div>
                     </div>
                   </details>
                 </div>
                 <div className="flex justify-between mt-2 border-t-2 border-base-200">
-                  <div className="text-xl font-medium">
-                    TOTAL : 
+                  <div className="text-xl font-medium">TOTAL :</div>
+                  <div>
+                    {Number.parseFloat(
+                      booking.totalPrice +
+                        (convenienceFees + convenienceFees * 0.18)
+                    ).toFixed(2)}{' '}
+                    INR
                   </div>
-                  <div>{Number.parseFloat(booking.totalPrice + (convenienceFees + (convenienceFees * 0.18))).toFixed(2)} INR</div>
                 </div>
                 <div className="flex justify-center w-full">
                   <div>

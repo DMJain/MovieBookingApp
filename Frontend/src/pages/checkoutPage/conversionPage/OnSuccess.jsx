@@ -1,10 +1,22 @@
 import { useSelector } from 'react-redux';
-
+import { useCreatreBooking } from '../../../hooks/booking.hooks';
 
 const OnSuccess = () => {
     const movie = useSelector((state) => state.movie);
     const hall = useSelector((state) => state.hall);
     const booking = useSelector((state) => state.booking);
+
+    const { mutateAsync: CreatreBookingAync } = useCreatreBooking();
+
+  const createBooking = async () => {
+    await CreatreBookingAync({
+      showId: hall.showId,
+      seatNumber: booking.selectedSeats,
+      paymentId: booking.orderId,
+    })
+  }
+
+    createBooking();
 
     return (
         <div className='flex justify-center items-center p-20'>

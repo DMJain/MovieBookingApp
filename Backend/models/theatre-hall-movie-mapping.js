@@ -28,6 +28,10 @@ const theatreHallMovieMappingSchema = new Schema(
       type: Number,
       required: true,
     },
+    city: {
+      type: String,
+      required: true,
+    },
   },
   { timestamps: true }
 )

@@ -20,6 +20,10 @@ class TheatreService {
     return TheatreHall.find({ theatreId: id })
   }
 
+  static getHall(id){
+    return TheatreHall.find({_id: id})
+  }
+
   static async createTheatreHall(data) {
     const validationResult = await createTheatreHallSchema.parseAsync(data)
     return TheatreHall.create(validationResult)
@@ -37,6 +41,10 @@ class TheatreService {
     return Theatre.findById(id)
   }
 
+  static getHallbyId(id) {
+    return TheatreHall.findById(id)
+  }
+
   static createShow(data) {
     return TheatreHallMovieMapping.create(data)
   }
@@ -48,8 +56,8 @@ class TheatreService {
     })
   }
 
-  static getShowsByMovieIdExtended(movieId) {
-    return TheatreHallMovieMapping.find({ movieId }).populate({
+  static getShowsByMovieIdExtended(movieId, city) {
+    return TheatreHallMovieMapping.find({ movieId, city }).populate({
       path: 'theatreHallId',
       populate: [{ path: 'theatreId' }],
     })

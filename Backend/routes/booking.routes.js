@@ -8,5 +8,7 @@ router.use(restrictToRole('user'))
 
 router.post('/create', controller.handleCreateBooking)
 router.post('/verify-payment', controller.verifyPayment)
+router.post('/createBooking', controller.createBooking)
+router.post('/show', controller.getShowBooking)
 
 module.exports = router

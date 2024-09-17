@@ -66,6 +66,9 @@ async function createShow(req, res) {
   const { endTimestamp, movieId, price,showDate, startTimestamp, theatreHallId } =
     validationResult.data
 
+  const TheaterHall = await TheatreService.getHallbyId(theatreHallId);
+  const Theatre = await TheatreService.getById(TheaterHall.theatreId);
+
   const hall = await TheatreService.createShow({
     endTimestamp,
     movieId,
@@ -73,6 +76,7 @@ async function createShow(req, res) {
     showDate,
     startTimestamp,
     theatreHallId,
+    city: Theatre.city.toLowerCase(),
   })
 
   return res.status(201).json({ status: 'success', data: hall })
@@ -84,6 +88,14 @@ async function listShowsByMovieId(req, res) {
   return res.status(200).json({ data: shows })
 }
 
+async function listShowsByMovieIdAndCity(req, res) {
+  const lowerCase = req.params.city
+  const movieId = req.params.movieId
+  const city = lowerCase.toLowerCase();
+  const shows = await TheatreService.getShowsByMovieIdExtended(movieId, city )
+  return res.status(200).json({ data: shows })
+}
+
 module.exports = {
   getAllTheatres,
   createTheatre,
@@ -92,4 +104,5 @@ module.exports = {
   createTheatreHall,
   createShow,
   listShowsByMovieId,
+  listShowsByMovieIdAndCity,
 }

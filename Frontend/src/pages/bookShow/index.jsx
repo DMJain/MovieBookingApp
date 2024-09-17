@@ -40,6 +40,7 @@ const BookShowPage = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const movie = useSelector((state) => state.movie);
+  const location = useSelector((state) => state.location)
   const [isLoading, setIsLoading] = useState(false);
 
   const [theaterDatas, setTheaterDatas] = useState([]);
@@ -55,7 +56,7 @@ const BookShowPage = () => {
           navigate('/explore');
           return;
         }
-        const { data } = await apiInstance.get(`/api/shows/${movie._id}`);
+        const { data } = await apiInstance.get(`/api/${location.location}/shows/${movie._id}`);
         // Process data using filterData
         const processedData = filterData(data.data, selectedDate);
 
@@ -70,7 +71,7 @@ const BookShowPage = () => {
       }
     };
     fetchShows();
-  }, [selectedDate]);
+  }, [selectedDate, location]);
   
   const today = new Date();
   const minDate = today.toISOString().slice(0, 10);
