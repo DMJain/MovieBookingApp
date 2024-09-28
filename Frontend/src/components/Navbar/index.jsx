@@ -18,7 +18,7 @@ const Navbar = () => {
       const lat = position.coords.latitude;
       const long = position.coords.longitude;
       fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${long}`   
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${long}`
 
       )
         .then((res) => res.json())

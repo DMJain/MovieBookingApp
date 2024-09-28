@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { useCreatreBooking } from '../../../hooks/booking.hooks';
 
@@ -8,15 +9,22 @@ const OnSuccess = () => {
 
     const { mutateAsync: CreatreBookingAync } = useCreatreBooking();
 
-  const createBooking = async () => {
-    await CreatreBookingAync({
-      showId: hall.showId,
-      seatNumber: booking.selectedSeats,
-      paymentId: booking.orderId,
-    })
-  }
+    const isBookingCreatedRef = useRef(false);
 
+  const createBooking = async () => {
+    if (!isBookingCreatedRef.current) {
+      isBookingCreatedRef.current = true;
+      await CreatreBookingAync({
+        showId: hall.showId,
+        seatNumber: booking.selectedSeats,
+        paymentId: booking.orderId,
+      });
+    }
+  };
+
+  useEffect(() => {
     createBooking();
+  }, []);
 
     return (
         <div className='flex justify-center items-center p-20'>

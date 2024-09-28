@@ -9,7 +9,6 @@ const Hall = require('../models/theatre-halls.model');
 const Booking = require('../models/booking.model');
 const axios = require('axios');
 const { hash, createId } = require('../utils/hash');
-const { type } = require('os');
 // const {Cashfree} = require('cashfree-pg');
 // import { Cashfree } from "cashfree-pg"; 
 
