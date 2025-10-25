@@ -34,11 +34,18 @@ const CreateMovieForm = () => {
   const [durationInMinutes, setDurationInMinutes] = useState('');
   const [imageUpload, setImageUpload] = useState(null);
   const [genre, setGenre] = useState([]);
-  const [genreInput, setGenreInput] = useState('');
   const [categories, setCategories] = useState([]);
-  const [categoryInput, setCategoryInput] = useState('');
   const [adultRating, setAdultRating] = useState('U');
 
+  const availableGenres = [
+    'Action', 'Adventure', 'Animation', 'Biography', 'Comedy', 'Crime',
+    'Documentary', 'Drama', 'Family', 'Fantasy', 'Horror', 'Musical',
+    'Mystery', 'Romance', 'Sci-Fi', 'Thriller', 'War', 'Western'
+  ];
+
+  const availableCategories = [
+    '2D', '3D', 'IMAX', 'IMAX 3D', '4DX', 'MX4D', 'ScreenX', 'Dolby Cinema', 'Standard'
+  ];
 
   const { mutateAsync: createMovieAsync } = useCreateMovie();
 
@@ -51,10 +58,9 @@ const CreateMovieForm = () => {
     return urlImg;
   };
 
-  const handleAddGenre = () => {
-    if (genreInput.trim() && !genre.includes(genreInput.trim())) {
-      setGenre([...genre, genreInput.trim()]);
-      setGenreInput('');
+  const handleAddGenre = (selectedGenre) => {
+    if (selectedGenre && !genre.includes(selectedGenre)) {
+      setGenre([...genre, selectedGenre]);
     }
   };
 
@@ -62,10 +68,9 @@ const CreateMovieForm = () => {
     setGenre(genre.filter(g => g !== genreToRemove));
   };
 
-  const handleAddCategory = () => {
-    if (categoryInput.trim() && !categories.includes(categoryInput.trim())) {
-      setCategories([...categories, categoryInput.trim()]);
-      setCategoryInput('');
+  const handleAddCategory = (selectedCategory) => {
+    if (selectedCategory && !categories.includes(selectedCategory)) {
+      setCategories([...categories, selectedCategory]);
     }
   };
 
@@ -137,15 +142,16 @@ const CreateMovieForm = () => {
         {/* Genre */}
         <div>
           <div className="flex gap-2">
-            <input 
-              type="text" 
-              className="grow input input-bordered" 
-              placeholder="GENRE (e.g., Action, Comedy, Drama)" 
-              value={genreInput}
-              onChange={(e) => setGenreInput(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddGenre())}
-            />
-            <button type="button" className="btn btn-outline" onClick={handleAddGenre}>Add</button>
+            <select 
+              className="select select-bordered grow" 
+              onChange={(e) => handleAddGenre(e.target.value)}
+              value=""
+            >
+              <option value="" disabled>SELECT GENRE</option>
+              {availableGenres.filter(g => !genre.includes(g)).map((g) => (
+                <option key={g} value={g}>{g}</option>
+              ))}
+            </select>
           </div>
           {genre.length > 0 && (
             <div className="flex flex-wrap gap-2 mt-2">
@@ -162,15 +168,16 @@ const CreateMovieForm = () => {
         {/* Categories */}
         <div>
           <div className="flex gap-2">
-            <input 
-              type="text" 
-              className="grow input input-bordered" 
-              placeholder="CATEGORIES (e.g., 2D, 3D, IMAX, 4DX)" 
-              value={categoryInput}
-              onChange={(e) => setCategoryInput(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddCategory())}
-            />
-            <button type="button" className="btn btn-outline" onClick={handleAddCategory}>Add</button>
+            <select 
+              className="select select-bordered grow" 
+              onChange={(e) => handleAddCategory(e.target.value)}
+              value=""
+            >
+              <option value="" disabled>SELECT CATEGORY</option>
+              {availableCategories.filter(c => !categories.includes(c)).map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
           </div>
           {categories.length > 0 && (
             <div className="flex flex-wrap gap-2 mt-2">

@@ -13,11 +13,32 @@ const moviesSchema = new Schema(
       type: String,
     },
     genre: {
-      type: [String], // Array of genres: Action, Comedy, Drama, etc.
+      type: [String],
+      enum: [
+        'Action',
+        'Adventure',
+        'Animation',
+        'Biography',
+        'Comedy',
+        'Crime',
+        'Documentary',
+        'Drama',
+        'Family',
+        'Fantasy',
+        'Horror',
+        'Musical',
+        'Mystery',
+        'Romance',
+        'Sci-Fi',
+        'Thriller',
+        'War',
+        'Western'
+      ],
       default: [],
     },
     categories: {
-      type: [String], // Array of categories: 2D, 3D, IMAX, 4DX, etc.
+      type: [String],
+      enum: ['2D', '3D', 'IMAX', 'IMAX 3D', '4DX', 'MX4D', 'ScreenX', 'Dolby Cinema', 'Standard'],
       default: [],
     },
     adultRating: {
