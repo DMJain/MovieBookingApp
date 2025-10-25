@@ -11,6 +11,7 @@ import SignupPage from "./pages/sign-up";
 import DashboardPage from "./pages/dashboard";
 import Explore from "./pages/explore";
 import MoviesPage from "./pages/movies";
+import PersonPage from "./pages/person";
 import BookShowPage from "./pages/bookShow";
 import BookSeatPage from "./pages/bookSeat";
 import UserDashboard from "./pages/dashboard/user-dashboard";
@@ -32,6 +33,7 @@ function App() {
       <Route path="/" element={<Homepage />} />
       <Route path="/explore" element={<Explore />} />
       <Route path="/movies/:id" element={<MoviesPage />} />
+      <Route path="/person/:id" element={<PersonPage />} />
       <Route path="/dashboard" element={<DashboardPage />} />
       <Route path="/sign-in" element={<SigninPage />} />
       <Route path="/sign-up" element={<SignupPage />} />  

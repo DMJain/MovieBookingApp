@@ -33,6 +33,11 @@ const CreateMovieForm = () => {
   const [language, setLanguage] = useState('');
   const [durationInMinutes, setDurationInMinutes] = useState('');
   const [imageUpload, setImageUpload] = useState(null);
+  const [genre, setGenre] = useState([]);
+  const [genreInput, setGenreInput] = useState('');
+  const [categories, setCategories] = useState([]);
+  const [categoryInput, setCategoryInput] = useState('');
+  const [adultRating, setAdultRating] = useState('U');
 
 
   const { mutateAsync: createMovieAsync } = useCreateMovie();
@@ -46,6 +51,28 @@ const CreateMovieForm = () => {
     return urlImg;
   };
 
+  const handleAddGenre = () => {
+    if (genreInput.trim() && !genre.includes(genreInput.trim())) {
+      setGenre([...genre, genreInput.trim()]);
+      setGenreInput('');
+    }
+  };
+
+  const handleRemoveGenre = (genreToRemove) => {
+    setGenre(genre.filter(g => g !== genreToRemove));
+  };
+
+  const handleAddCategory = () => {
+    if (categoryInput.trim() && !categories.includes(categoryInput.trim())) {
+      setCategories([...categories, categoryInput.trim()]);
+      setCategoryInput('');
+    }
+  };
+
+  const handleRemoveCategory = (categoryToRemove) => {
+    setCategories(categories.filter(c => c !== categoryToRemove));
+  };
+
 
   const handleCreateMovie = async (e) => {
     e.preventDefault();
@@ -57,6 +84,9 @@ const CreateMovieForm = () => {
         language,
         imageURL: url,
         durationInMinutes: Number(durationInMinutes),
+        genre: genre.length > 0 ? genre : undefined,
+        categories: categories.length > 0 ? categories : undefined,
+        adultRating,
       };
       console.log('movieData', movieData);
       const filteredMovieData = Object.fromEntries(
@@ -70,6 +100,9 @@ const CreateMovieForm = () => {
       setLanguage('');
       setImageUpload(null);
       setDurationInMinutes('');
+      setGenre([]);
+      setCategories([]);
+      setAdultRating('U');
     } catch (error) {
       console.log(error);
     }
@@ -95,15 +128,81 @@ const CreateMovieForm = () => {
     <div>
       <div className='form flex flex-col gap-2'>
         {/* title */}
-          <input type="text" className="grow input input-bordered" placeholder="TITLE" onChange={handleTitle}/>
+          <input type="text" className="grow input input-bordered" placeholder="TITLE" value={title} onChange={handleTitle}/>
         {/* description */}
-        <input type="text" className="grow input input-bordered" placeholder="DESCRIPTION" onChange={handleDescription}/>
+        <input type="text" className="grow input input-bordered" placeholder="DESCRIPTION" value={description} onChange={handleDescription}/>
         {/* language */}
-          <input type="text" className="grow input input-bordered" placeholder="LANGUAGE" onChange={handleLanguage}/>
+          <input type="text" className="grow input input-bordered" placeholder="LANGUAGE" value={language} onChange={handleLanguage}/>
+        
+        {/* Genre */}
+        <div>
+          <div className="flex gap-2">
+            <input 
+              type="text" 
+              className="grow input input-bordered" 
+              placeholder="GENRE (e.g., Action, Comedy, Drama)" 
+              value={genreInput}
+              onChange={(e) => setGenreInput(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddGenre())}
+            />
+            <button type="button" className="btn btn-outline" onClick={handleAddGenre}>Add</button>
+          </div>
+          {genre.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-2">
+              {genre.map((g, index) => (
+                <span key={index} className="badge badge-primary gap-2">
+                  {g}
+                  <button type="button" className="btn btn-ghost btn-xs" onClick={() => handleRemoveGenre(g)}>✕</button>
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Categories */}
+        <div>
+          <div className="flex gap-2">
+            <input 
+              type="text" 
+              className="grow input input-bordered" 
+              placeholder="CATEGORIES (e.g., 2D, 3D, IMAX, 4DX)" 
+              value={categoryInput}
+              onChange={(e) => setCategoryInput(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddCategory())}
+            />
+            <button type="button" className="btn btn-outline" onClick={handleAddCategory}>Add</button>
+          </div>
+          {categories.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-2">
+              {categories.map((c, index) => (
+                <span key={index} className="badge badge-secondary gap-2">
+                  {c}
+                  <button type="button" className="btn btn-ghost btn-xs" onClick={() => handleRemoveCategory(c)}>✕</button>
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Adult Rating */}
+        <select 
+          className="select select-bordered w-full" 
+          value={adultRating} 
+          onChange={(e) => setAdultRating(e.target.value)}
+        >
+          <option value="U">U - Universal</option>
+          <option value="UA">UA - Universal Adult</option>
+          <option value="U/A 7+">U/A 7+ - Universal Adult 7+</option>
+          <option value="U/A 13+">U/A 13+ - Universal Adult 13+</option>
+          <option value="U/A 16+">U/A 16+ - Universal Adult 16+</option>
+          <option value="A">A - Adult</option>
+          <option value="S">S - Restricted</option>
+        </select>
+
         {/* image URL */}
         <input type="file" className="file-input file-input-bordered w-full grow" placeholder='ADD MOVIE BANER' onChange={handleImageUpload}/>
         {/* duration in minutes */}
-          <input type="text" className="grow input input-bordered" placeholder="DURATION IN MINUTES" onChange={handleDurationInMinutes} />
+          <input type="text" className="grow input input-bordered" placeholder="DURATION IN MINUTES" value={durationInMinutes} onChange={handleDurationInMinutes} />
         {/* submit Button */}
           <button className="btn btn-outline btn-primary" onClick={handleCreateMovie}>CREATE MOVIE</button>
       </div>
