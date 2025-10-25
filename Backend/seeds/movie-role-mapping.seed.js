@@ -54,14 +54,6 @@ const movieRoleMappingSeedData = [
   },
   {
     movieRef: "Oppenheimer",
-    personRef: "Christopher Nolan",
-    role: "producer",
-    characterName: null,
-    order: 2,
-    isCameo: false,
-  },
-  {
-    movieRef: "Oppenheimer",
     personRef: "Florence Pugh",
     role: "actress",
     characterName: "Jean Tatlock",
@@ -198,14 +190,6 @@ const movieRoleMappingSeedData = [
     order: 3,
     isCameo: false,
   },
-  {
-    movieRef: "Barbie",
-    personRef: "Margot Robbie",
-    role: "producer",
-    characterName: null,
-    order: 1,
-    isCameo: false,
-  },
 
   // ========== THE DARK KNIGHT ==========
   {
@@ -294,14 +278,6 @@ const movieRoleMappingSeedData = [
     role: "producer",
     characterName: null,
     order: 1,
-    isCameo: false,
-  },
-  {
-    movieRef: "The Dark Knight",
-    personRef: "Christopher Nolan",
-    role: "producer",
-    characterName: null,
-    order: 2,
     isCameo: false,
   },
   {
@@ -432,14 +408,6 @@ const movieRoleMappingSeedData = [
     role: "producer",
     characterName: null,
     order: 1,
-    isCameo: false,
-  },
-  {
-    movieRef: "Inception",
-    personRef: "Christopher Nolan",
-    role: "producer",
-    characterName: null,
-    order: 2,
     isCameo: false,
   },
   {
@@ -1040,14 +1008,6 @@ const movieRoleMappingSeedData = [
   },
   {
     movieRef: "La La Land",
-    personRef: "Damien Chazelle",
-    role: "producer",
-    characterName: null,
-    order: 2,
-    isCameo: false,
-  },
-  {
-    movieRef: "La La Land",
     personRef: "Linus Sandgren",
     role: "producer",
     characterName: null,
@@ -1422,14 +1382,6 @@ const movieRoleMappingSeedData = [
   },
   {
     movieRef: "Avatar: The Way of Water",
-    personRef: "James Cameron",
-    role: "producer",
-    characterName: null,
-    order: 2,
-    isCameo: false,
-  },
-  {
-    movieRef: "Avatar: The Way of Water",
     personRef: "Jon Landau",
     role: "producer",
     characterName: null,
@@ -1540,14 +1492,6 @@ const movieRoleMappingSeedData = [
     role: "director",
     characterName: null,
     order: 1,
-    isCameo: false,
-  },
-  {
-    movieRef: "Parasite",
-    personRef: "Bong Joon-ho",
-    role: "producer",
-    characterName: null,
-    order: 2,
     isCameo: false,
   },
   {
@@ -1936,14 +1880,6 @@ const movieRoleMappingSeedData = [
   },
   {
     movieRef: "Interstellar",
-    personRef: "Christopher Nolan",
-    role: "producer",
-    characterName: null,
-    order: 2,
-    isCameo: false,
-  },
-  {
-    movieRef: "Interstellar",
     personRef: "Hans Zimmer",
     role: "producer",
     characterName: null,
@@ -2064,14 +2000,6 @@ const movieRoleMappingSeedData = [
     role: "director",
     characterName: null,
     order: 1,
-    isCameo: false,
-  },
-  {
-    movieRef: "Dune",
-    personRef: "Denis Villeneuve",
-    role: "producer",
-    characterName: null,
-    order: 2,
     isCameo: false,
   },
   {

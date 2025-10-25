@@ -57,7 +57,10 @@ class TheatreService {
   }
 
   static getShowsByMovieIdExtended(movieId, city) {
-    return TheatreHallMovieMapping.find({ movieId, city }).populate({
+    return TheatreHallMovieMapping.find({ 
+      movieId, 
+      city: { $regex: new RegExp(`^${city}$`, 'i') } 
+    }).populate({
       path: 'theatreHallId',
       populate: [{ path: 'theatreId' }],
     })
