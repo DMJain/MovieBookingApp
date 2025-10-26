@@ -16,6 +16,7 @@ const TheatreReview = require('../models/theatre-review.model');
 const CriticReview = require('../models/critic-review.model');
 const MovieReview = require('../models/movie-review.model');
 const TheatreHallMovieMapping = require('../models/theatre-hall-movie-mapping');
+const Booking = require('../models/booking.model');
 
 // Import seed data
 const theatreSeedData = require('./theatre.seed');
@@ -30,6 +31,7 @@ const { generateTheatreReviews } = require('./theatre-review.seed');
 const { generateCriticReviews } = require('./critic-review.seed');
 const { generateMovieReviews } = require('./movie-review.seed');
 const { seedTheatreHallMovieMappings } = require('./theatre-hall-movie-mapping.seed');
+const { generateHistoricalBookings } = require('./booking.seed');
 
 /**
  * Main seeding function
@@ -190,6 +192,41 @@ async function seedAll() {
     console.log(`✅ Seeded ${mappingResult.inserted} show mappings\n`);
 
     // ==========================================
+    // 9. SEED BOOKINGS (Analytics Data)
+    // ==========================================
+    console.log('🎫 Step 9: Seeding Bookings (Analytics Data)...');
+    await Booking.deleteMany({});
+    
+    // Get all shows and regular users
+    const allShows = await TheatreHallMovieMapping.find({});
+    const regularUsers = users.filter(u => u.role === 'user');
+    
+    console.log('   Generating historical bookings (6 months)...');
+    const bookings = generateHistoricalBookings(allShows, regularUsers, 6);
+    
+    // Insert bookings in batches to handle duplicates
+    console.log('   Inserting bookings...');
+    const batchSize = 1000;
+    let insertedBookings = 0;
+    
+    for (let i = 0; i < bookings.length; i += batchSize) {
+      const batch = bookings.slice(i, i + batchSize);
+      try {
+        await Booking.insertMany(batch, { ordered: false });
+        insertedBookings += batch.length;
+      } catch (error) {
+        if (error.code === 11000) {
+          const successfulInserts = error.result?.nInserted || 0;
+          insertedBookings += successfulInserts;
+        } else {
+          throw error;
+        }
+      }
+    }
+    
+    console.log(`✅ Seeded ${insertedBookings} bookings\n`);
+
+    // ==========================================
     // DISPLAY SUMMARY
     // ==========================================
     console.log('╔════════════════════════════════════════════════╗');
@@ -205,6 +242,7 @@ async function seedAll() {
     console.log(`║ Critic Reviews:           ${String(criticReviews.length).padStart(5)} ⭐      ║`);
     console.log(`║ Movie Reviews:            ${String(movieReviews.length).padStart(5)} ⭐      ║`);
     console.log(`║ Show Mappings (7 days):   ${String(mappingResult.inserted).padStart(5)} 🎟️       ║`);
+    console.log(`║ Bookings (6 months):      ${String(insertedBookings).padStart(5)} 🎫      ║`);
     console.log('╠════════════════════════════════════════════════╣');
     console.log(`║ TOTAL RECORDS:            ${String(
       theatres.length + 
@@ -216,7 +254,8 @@ async function seedAll() {
       theatreReviews.length + 
       criticReviews.length + 
       movieReviews.length + 
-      mappingResult.inserted
+      mappingResult.inserted +
+      insertedBookings
     ).padStart(5)}            ║`);
     console.log('╚════════════════════════════════════════════════╝');
 

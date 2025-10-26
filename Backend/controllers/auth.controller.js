@@ -76,8 +76,37 @@ async function handleMe(req, res) {
   return res.json({ isLoggedIn: true, data: { user } })
 }
 
+async function handleUpdateProfile(req, res) {
+  if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
+
+  const { firstname, lastname } = req.body;
+
+  if (!firstname || !lastname) {
+    return res.status(400).json({ error: 'First name and last name are required' });
+  }
+
+  try {
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      { firstname, lastname },
+      { new: true, runValidators: true }
+    ).select({
+      firstname: true,
+      lastname: true,
+      email: true,
+      role: true,
+    });
+
+    return res.status(200).json({ status: 'success', data: { user } });
+  } catch (err) {
+    console.log(`Error updating profile:`, err);
+    return res.status(500).json({ status: 'error', error: 'Failed to update profile' });
+  }
+}
+
 module.exports = {
   handleSignup,
   handleSignin,
   handleMe,
+  handleUpdateProfile,
 }

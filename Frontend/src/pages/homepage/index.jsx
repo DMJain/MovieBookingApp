@@ -5,14 +5,8 @@ import { useGetLatest10Movies} from "../../hooks/movie.hooks";
 import {fetchMovie} from '../../store/slices/movieSlice';
 
 const Homepage = () => {
-  // const navigate = useNavigate();
-
-  // useEffect(() => {
-  //   navigate("/sign-in");
-  // }, [navigate]);
   const{data : movies} = useGetLatest10Movies();
   const dispatch = useDispatch();
-  
   const navigate = useNavigate();
 
   const toExplorePage = () => {
@@ -20,53 +14,116 @@ const Homepage = () => {
   }
 
   const toMoviePage = (id) => {
+    dispatch(fetchMovie(id));
     navigate(`/movies/${id}`);
   };
 
+  const scrollToSlide = (index) => {
+    const element = document.getElementById(`slide${index}`);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
+    }
+  };
+
   return (
-    <div className="flex flex-col">
-      {/**carouserl */}
-      <div className="carousel w-full bg-base-200 p-2  shadow-lg mb-5">
-        <div id="slide1" className="carousel-item w-full">
-          <img
-            src="https://img.daisyui.com/images/stock/photo-1625726411847-8cbb60cc71e6.webp"
-            className="w-full rounded-box"
-          />
-          <div className="absolute left-5 right-5 top-1/2 flex -translate-y-1/2 transform justify-between">
-            <a href="#slide4" className="btn btn-circle">
-              ❮
-            </a>
-            <a href="#slide2" className="btn btn-circle">
-              ❯
-            </a>
+    <div className="min-h-screen">
+      {/* Hero Section */}
+      <div 
+        className="hero min-h-[60vh]" 
+        style={{
+          backgroundImage: "url(https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=2000&q=80)",
+        }}>
+        <div className="hero-overlay bg-opacity-60"></div>
+        <div className="hero-content text-center text-neutral-content">
+          <div className="max-w-md">
+            <h1 className="mb-5 text-5xl font-bold">Your Gateway to the Silver Screen</h1>
+            <p className="mb-5">
+              Discover the latest blockbusters, book your seats with ease, and enjoy an unforgettable cinema experience with CineVerse.
+            </p>
+            <button className="btn btn-primary" onClick={toExplorePage}>
+              Explore Movies
+            </button>
           </div>
         </div>
       </div>
-      {/**movies */}
-      <div className="flex flex-col mb-10">
-        <div>
-          <a className="btn text-4xl pl-3 btn-link no-underline" onClick={toExplorePage}>Movies</a>
+
+      {/* Featured Movies Section */}
+      <div className="container mx-auto px-4 py-12">
+        <div className="flex justify-between items-center mb-8">
+          <h2 className="text-3xl font-bold text-base-content">Featured Movies</h2>
+          <button className="btn btn-ghost btn-sm" onClick={toExplorePage}>
+            See More →
+          </button>
         </div>
-        <div className="flex gap-3 p-3">
-          {movies?.map((movie) => (<div key={movie._id} className="card card-compact bg-base-100 w-96 shadow-lg">
-            <figure>
-              <img
-                className="rounded-md h-60 object-cover"
-                src={movie.imageURL}
-                alt="Shoes"
-              />
-            </figure>
-            <div className="card-body">
-              <h2 className="card-title">{movie.title}</h2>
-              <p className="h-28 overflow-x-auto">{movie.description}</p>
-              <div className="card-actions justify-end">
-                <button className="btn btn-primary" onClick={() => {
-                  dispatch(fetchMovie(movie._id));
-                  toMoviePage(movie._id);
-                }}>View</button>
+
+        {/* Movies Carousel */}
+        <div className="relative group">
+          <div className="carousel w-full space-x-4 rounded-box scroll-smooth">
+            {movies?.slice(0, 6).map((movie, index) => (
+              <div key={movie._id} id={`slide${index}`} className="carousel-item w-80 scroll-mt-0">
+                <div className="card bg-base-100 image-full w-full shadow-xl">
+                  <figure>
+                    <img
+                      src={movie.imageURL}
+                      alt={movie.title} />
+                  </figure>
+                  <div className="card-body">
+                    <h2 className="card-title">{movie.title}</h2>
+                    <p className="line-clamp-2">{movie.description}</p>
+                    <div className="card-actions justify-end">
+                      <button className="btn btn-primary" onClick={() => toMoviePage(movie._id)}>Book Now</button>
+                    </div>
+                  </div>
+                </div>
               </div>
+            ))}
+          </div>
+          
+          {/* Navigation Arrows - Visible only on hover */}
+          {movies && movies.length > 1 && (
+            <>
+              <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 flex justify-between px-4 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
+                <button onClick={() => scrollToSlide(0)} className="btn btn-circle pointer-events-auto">❮</button> 
+                <button onClick={() => scrollToSlide(Math.min(5, (movies?.length || 1) - 1))} className="btn btn-circle pointer-events-auto">❯</button>
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Empty State */}
+        {(!movies || movies.length === 0) && (
+          <div className="text-center py-12">
+            <p className="text-base-content opacity-70">No movies available at the moment.</p>
+          </div>
+        )}
+      </div>
+
+      {/* Additional Info Section */}
+      <div className="bg-base-200 py-12">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+            <div>
+              <div className="text-4xl mb-4">🎬</div>
+              <h3 className="text-xl font-bold mb-2">Latest Releases</h3>
+              <p className="text-base-content opacity-70">
+                Stay updated with the newest movies hitting theaters
+              </p>
             </div>
-          </div>))}
+            <div>
+              <div className="text-4xl mb-4">💺</div>
+              <h3 className="text-xl font-bold mb-2">Easy Booking</h3>
+              <p className="text-base-content opacity-70">
+                Book your favorite seats in just a few clicks
+              </p>
+            </div>
+            <div>
+              <div className="text-4xl mb-4">🎫</div>
+              <h3 className="text-xl font-bold mb-2">Best Prices</h3>
+              <p className="text-base-content opacity-70">
+                Get the best deals on movie tickets
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </div>

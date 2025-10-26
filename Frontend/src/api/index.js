@@ -12,3 +12,5 @@ apiInstance.interceptors.request.use((reqPayload) => {
   }
   return reqPayload;
 });
+
+export default apiInstance;

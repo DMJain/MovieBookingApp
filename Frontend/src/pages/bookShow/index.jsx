@@ -166,93 +166,167 @@ const BookShowPage = () => {
   };
 
   return (
-    <div className="mt-5 p-3 flex justify-center items-center">
-      <div className='w-4/5'>
+    <div className="min-h-screen bg-base-100 p-6">
+      <div className='max-w-7xl mx-auto'>
       {/* Movie Header */}
-      <div className="bg-base-200 p-3 mb-3 rounded-xl">
-        <div className="">
-          <h1 className="text-5xl">{movie.title}</h1>
-        </div>
-        <div className="flex gap-2 pt-4 pb-2">
-          <div className="badge badge-primary badge-outline">primary</div>
-          <div className="badge badge-primary badge-outline">primary</div>
-        </div>
-      </div>
-      <div className="flex justify-between mb-5">
-        <div>
-          <div className="">
-            <input type="date" defaultValue={selectedDate} className='p-3 rounded-full border-base-300 text-base-300 bg-base-100 border grow' onChange={handleDateChange} min={minDate}
-        max={maxDate}></input>
+      <div className="hero bg-base-200 rounded-xl mb-6">
+        <div className="hero-content text-center py-8">
+          <div>
+            <h1 className="text-5xl font-bold mb-4">{movie.title}</h1>
+            <div className="flex gap-2 justify-center">
+              {movie.language && (
+                <div className="badge badge-primary badge-lg">{movie.language}</div>
+              )}
+              {movie.durationInMinutes && (
+                <div className="badge badge-secondary badge-lg">{movie.durationInMinutes} min</div>
+              )}
+            </div>
           </div>
         </div>
-        <div className="flex">
-          <select className="select rounded-full">
-            <option value="">Price Range</option>
-            <option value="low">Low</option>
-            <option value="high">High</option>
-          </select>
-
-          <select className="select rounded-full" defaultValue="morning">
-            <option value="">Show Timing</option>
-            <option value="morning">Morning</option>
-            <option value="afternoon">Afternoon</option>
-            <option value="evening">Evening</option>
-          </select>
-          <label className="input input-bordered flex items-center gap-2 rounded-full">
-            <input
-              type="text"
-              className="grow rounded-full"
-              placeholder="Search Cinema"
-            />
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 16 16"
-              fill="currentColor"
-              className="h-4 w-4 opacity-70"
-            >
-              <path
-                fillRule="evenodd"
-                d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z"
-                clipRule="evenodd"
-              />
-            </svg>
-          </label>
-        </div>
       </div>
-      {/* theater & show */}
-      {isLoading ? (<h1 className='text-4xl'>LOADING</h1>) : (
-      <div className=''>
-        <div>
-          {theaterDatas.length > 0 ? (
-            console.log('theaterDatas', typeof theaterDatas),
-            theaterDatas.map((theaterData) => (
-            <div key={theaterData.theatreId} className="bordered border-2 shadow-lg bg-base-100 rounded-xl mb-4">
-              <div className="flex">
-                <div className="border-r-2 border-base-300 h-48 w-1/5 flex flex-col justify-center items-center p-8">
-                  <h2 className="text-3xl mb-2">{theaterData.theatreName}</h2>
-                  <div className="tooltip text-sm" data-tip={theaterData.location}>
-                    <button className="">&#9432;</button>
-                  </div>
-                  <button 
-                    className="btn btn-sm btn-outline mt-2"
-                    onClick={() => openReviewModal(theaterData.theatreId)}
+
+      {/* Filters Section */}
+      <div className="card bg-base-100 shadow-xl mb-6">
+        <div className="card-body">
+          <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
+            {/* Date Picker */}
+            <div className="form-control w-full lg:w-auto">
+              <label className="label">
+                <span className="label-text font-semibold">Select Date</span>
+              </label>
+              <input 
+                type="date" 
+                defaultValue={selectedDate} 
+                className='input input-bordered w-full lg:w-auto' 
+                onChange={handleDateChange} 
+                min={minDate}
+                max={maxDate}
+              />
+            </div>
+
+            {/* Filter Controls */}
+            <div className="flex flex-wrap gap-3 items-end">
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text">Price Range</span>
+                </label>
+                <select className="select select-bordered">
+                  <option value="">All Prices</option>
+                  <option value="low">Low to High</option>
+                  <option value="high">High to Low</option>
+                </select>
+              </div>
+
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text">Show Timing</span>
+                </label>
+                <select className="select select-bordered" defaultValue="">
+                  <option value="">All Shows</option>
+                  <option value="morning">Morning</option>
+                  <option value="afternoon">Afternoon</option>
+                  <option value="evening">Evening</option>
+                </select>
+              </div>
+
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text">Search Theatre</span>
+                </label>
+                <label className="input input-bordered flex items-center gap-2">
+                  <input
+                    type="text"
+                    className="grow"
+                    placeholder="Search Cinema"
+                  />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 16 16"
+                    fill="currentColor"
+                    className="h-4 w-4 opacity-70"
                   >
-                    View Reviews
-                  </button>
-                </div>
-                <div className="p-5 grid grid-cols-12 gap-4 w-full">
-                  {theaterData.shows.map((show) => (
-                    <button key={show._id} className="btn btn-outline btn-info max-w-fit" onClick={() => (handleNavigation(show._id, show.seatNumber, show.price, show.startTime, selectedDate, theaterData.theatreName))}>
-                      {show.startTime}
-                    </button>
-                  ))}
-                </div>
+                    <path
+                      fillRule="evenodd"
+                      d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </label>
               </div>
             </div>
-          ))) : (<h1 className='text-4xl'>No Shows Available</h1>)}
-
+          </div>
         </div>
-      </div>)}
+      </div>
+      {/* Theatres & Shows */}
+      {isLoading ? (
+        <div className="flex flex-col gap-4">
+          <div className="skeleton h-48 w-full"></div>
+          <div className="skeleton h-48 w-full"></div>
+          <div className="skeleton h-48 w-full"></div>
+        </div>
+      ) : (
+        <div className='space-y-4'>
+          {theaterDatas.length > 0 ? (
+            theaterDatas.map((theaterData) => (
+              <div key={theaterData.theatreId} className="card bg-base-100 shadow-xl">
+                <div className="card-body p-0">
+                  <div className="flex flex-col lg:flex-row">
+                    {/* Theatre Info */}
+                    <div className="bg-base-200 lg:w-72 p-6 flex flex-col justify-center items-center border-r border-base-300">
+                      <h2 className="text-2xl font-bold mb-2 text-center">{theaterData.theatreName}</h2>
+                      <div className="tooltip" data-tip={theaterData.location}>
+                        <button className="btn btn-ghost btn-sm btn-circle">
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="w-5 h-5 stroke-current">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                          </svg>
+                        </button>
+                      </div>
+                      <button 
+                        className="btn btn-outline btn-xs mt-3"
+                        onClick={() => openReviewModal(theaterData.theatreId)}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
+                        </svg>
+                        View Reviews
+                      </button>
+                    </div>
+
+                    {/* Show Times */}
+                    <div className="p-6 flex-1">
+                      <div className="flex flex-wrap gap-3">
+                        {theaterData.shows.map((show) => (
+                          <button 
+                            key={show._id} 
+                            className="btn btn-outline" 
+                            onClick={() => (handleNavigation(show._id, show.seatNumber, show.price, show.startTime, selectedDate, theaterData.theatreName))}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            {show.startTime}
+                            <div className="badge badge-success badge-sm">₹{show.price}</div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="card bg-base-200 shadow-xl">
+              <div className="card-body items-center text-center">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-16 h-16 text-base-content opacity-50">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.182 16.318A4.486 4.486 0 0012.016 15a4.486 4.486 0 00-3.198 1.318M21 12a9 9 0 11-18 0 9 9 0 0118 0zM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75zm-.375 0h.008v.015h-.008V9.75zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75zm-.375 0h.008v.015h-.008V9.75z" />
+                </svg>
+                <h2 className="text-3xl font-bold">No Shows Available</h2>
+                <p className="text-base-content/70">Please try a different date or check back later</p>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Review Modal */}
       {showReviewModal && (

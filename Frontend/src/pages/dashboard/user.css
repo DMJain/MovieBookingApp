@@ -24,13 +24,11 @@
     background-color: greenyellow;
   }
   
-  .seats_container .selected-seat {
-    background-color: green;
-    color: white;
-  }
-  
-  button {
-    background: lightskyblue;
-  }
-  
-  
+.seats_container .selected-seat {
+  background-color: green;
+  color: white;
+}
+
+.user_dashboard_container button {
+  background: lightskyblue;
+}  

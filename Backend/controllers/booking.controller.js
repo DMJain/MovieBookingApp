@@ -7,8 +7,10 @@ const Show = require('../models/theatre-hall-movie-mapping');
 const User = require('../models/user.model');
 const Hall = require('../models/theatre-halls.model');
 const Booking = require('../models/booking.model');
+const SeatLock = require('../models/seat-lock.model');
 const axios = require('axios');
 const { hash, createId } = require('../utils/hash');
+const { emitSeatsLocked, emitSeatsUnlocked, emitSeatsBooked, emitSeatStatusUpdate } = require('../utils/socket');
 // const {Cashfree} = require('cashfree-pg');
 // import { Cashfree } from "cashfree-pg"; 
 
@@ -166,11 +168,63 @@ async function createBooking(req, res) {
     const userId = req.user._id;
 
     try {
-        seatNumber.forEach(async (seat) => {
-        await Booking.create({showId, seatNumber: seat, paymentId, gateway : 'CASHFREE', userId});
-        })
+        // Check if any seats are already booked (race condition protection)
+        const existingBookings = await Booking.find({
+            showId,
+            seatNumber: { $in: seatNumber }
+        }).select('seatNumber');
+
+        if (existingBookings.length > 0) {
+            const bookedSeatNumbers = existingBookings.map(b => b.seatNumber);
+            return res.status(409).json({ 
+                error: 'Some seats are already booked',
+                bookedSeats: bookedSeatNumbers
+            });
+        }
+
+        // Create bookings
+        const bookings = [];
+        for (const seat of seatNumber) {
+            try {
+                const booking = await Booking.create({
+                    showId, 
+                    seatNumber: seat, 
+                    paymentId, 
+                    gateway: 'CASHFREE', 
+                    userId
+                });
+                bookings.push(booking);
+            } catch (error) {
+                // Handle duplicate key error (race condition)
+                if (error.code === 11000) {
+                    console.error(`Seat ${seat} already booked during creation`);
+                    // Rollback: delete successfully created bookings
+                    if (bookings.length > 0) {
+                        await Booking.deleteMany({
+                            _id: { $in: bookings.map(b => b._id) }
+                        });
+                    }
+                    return res.status(409).json({
+                        error: 'Seat booking conflict. Please try again.',
+                        conflictingSeat: seat
+                    });
+                }
+                throw error; // Re-throw other errors
+            }
+        }
+        
+        // After successful booking, unlock the seats
+        await SeatLock.deleteMany({ showId, userId });
+        
+        // Emit socket event for seats booked
+        const io = req.app.get('io');
+        if (io) {
+            emitSeatsBooked(io, showId, seatNumber, userId.toString());
+        }
+        
         res.status(201).json({message: 'Booking created successfully'});
-    } catch{
+    } catch (error) {
+        console.error('Error creating booking:', error);
         res.status(500).json({error: 'Internal server error'});
     }
     
@@ -182,4 +236,218 @@ async function getShowBooking(req, res) {
     res.status(200).json(bookings);
 }
 
-module.exports = { handleCreateBooking, verifyPayment, createBooking , getShowBooking};
+async function getUserBookings(req, res) {
+    if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
+    
+    try {
+        const bookings = await Booking.find({ userId: req.user._id })
+            .populate({
+                path: 'showId',
+                populate: [
+                    {
+                        path: 'movieId',
+                        select: 'title imageURL language durationInMinutes'
+                    },
+                    {
+                        path: 'theatreHallId',
+                        populate: {
+                            path: 'theatreId',
+                            select: 'name plot street city state pincode'
+                        }
+                    }
+                ]
+            })
+            .sort({ createdAt: -1 });
+        
+        res.status(200).json(bookings);
+    } catch (error) {
+        console.error('Error fetching user bookings:', error);
+        res.status(500).json({ error: 'Failed to fetch bookings' });
+    }
+}
+
+async function lockSeats(req, res) {
+    if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
+    
+    const { showId, seatNumbers } = req.body;
+    
+    if (!showId || !Array.isArray(seatNumbers) || seatNumbers.length === 0) {
+        return res.status(400).json({ error: 'Invalid request. showId and seatNumbers are required.' });
+    }
+    
+    const userId = req.user._id;
+    const lockDuration = 10 * 60 * 1000; // 10 minutes in milliseconds
+    const expiresAt = new Date(Date.now() + lockDuration);
+    
+    try {
+        // Check if any seats are already booked
+        const bookedSeats = await Booking.find({
+            showId,
+            seatNumber: { $in: seatNumbers }
+        }).select('seatNumber');
+        
+        if (bookedSeats.length > 0) {
+            const bookedSeatNumbers = bookedSeats.map(b => b.seatNumber);
+            return res.status(409).json({ 
+                error: 'Some seats are already booked',
+                bookedSeats: bookedSeatNumbers
+            });
+        }
+        
+        // Check if any seats are locked by other users
+        const existingLocks = await SeatLock.find({
+            showId,
+            seatNumber: { $in: seatNumbers },
+            userId: { $ne: userId },
+            expiresAt: { $gt: new Date() }
+        }).select('seatNumber userId');
+        
+        if (existingLocks.length > 0) {
+            const lockedSeatNumbers = existingLocks.map(l => l.seatNumber);
+            return res.status(409).json({ 
+                error: 'Some seats are locked by other users',
+                lockedSeats: lockedSeatNumbers
+            });
+        }
+        
+        // Remove any existing locks by this user for this show
+        await SeatLock.deleteMany({ showId, userId });
+        
+        // Create new locks (or update existing ones)
+        const locks = seatNumbers.map(seatNumber => ({
+            showId,
+            seatNumber,
+            userId,
+            expiresAt
+        }));
+        
+        // Use bulkWrite for better performance and atomic updates
+        const bulkOps = locks.map(lock => ({
+            updateOne: {
+                filter: { showId: lock.showId, seatNumber: lock.seatNumber },
+                update: { $set: lock },
+                upsert: true
+            }
+        }));
+        
+        await SeatLock.bulkWrite(bulkOps);
+        
+        // Emit socket event to all clients watching this show
+        const io = req.app.get('io');
+        if (io) {
+            emitSeatsLocked(io, showId, seatNumbers, userId.toString());
+        }
+        
+        res.status(200).json({ 
+            message: 'Seats locked successfully',
+            expiresAt,
+            lockedSeats: seatNumbers
+        });
+    } catch (error) {
+        console.error('Error locking seats:', error);
+        if (error.code === 11000) {
+            // Duplicate key error - seat already locked
+            return res.status(409).json({ error: 'One or more seats are already locked' });
+        }
+        res.status(500).json({ error: 'Failed to lock seats' });
+    }
+}
+
+async function unlockSeats(req, res) {
+    if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
+    
+    const { showId, seatNumbers } = req.body;
+    
+    if (!showId) {
+        return res.status(400).json({ error: 'showId is required' });
+    }
+    
+    const userId = req.user._id;
+    
+    try {
+        // Get seats that will be unlocked before deleting
+        const seatsToUnlock = await SeatLock.find({ 
+            showId, 
+            userId 
+        }).select('seatNumber');
+        
+        const unlockedSeatNumbers = seatsToUnlock.map(s => s.seatNumber);
+        
+        // If specific seats provided, only unlock those
+        let result;
+        if (seatNumbers && Array.isArray(seatNumbers)) {
+            result = await SeatLock.deleteMany({ 
+                showId, 
+                userId, 
+                seatNumber: { $in: seatNumbers } 
+            });
+        } else {
+            result = await SeatLock.deleteMany({ showId, userId });
+        }
+        
+        // Emit socket event if seats were unlocked
+        if (result.deletedCount > 0) {
+            const io = req.app.get('io');
+            if (io) {
+                const seatsUnlocked = seatNumbers || unlockedSeatNumbers;
+                emitSeatsUnlocked(io, showId, seatsUnlocked, userId.toString());
+            }
+        }
+        
+        res.status(200).json({ 
+            message: 'Seats unlocked successfully',
+            unlockedCount: result.deletedCount
+        });
+    } catch (error) {
+        console.error('Error unlocking seats:', error);
+        // Return success even on error to prevent blocking user flow
+        res.status(200).json({ 
+            message: 'Unlock attempted',
+            unlockedCount: 0
+        });
+    }
+}
+
+async function getLockedAndBookedSeats(req, res) {
+    const { showId } = req.body;
+    
+    if (!showId) {
+        return res.status(400).json({ error: 'showId is required' });
+    }
+    
+    try {
+        // Get booked seats
+        const bookings = await Booking.find({ showId }).select('seatNumber');
+        const bookedSeats = bookings.map(b => b.seatNumber);
+        
+        // Get locked seats (excluding expired ones)
+        const locks = await SeatLock.find({ 
+            showId,
+            expiresAt: { $gt: new Date() }
+        }).select('seatNumber userId');
+        
+        const lockedSeats = locks.map(l => ({
+            seatNumber: l.seatNumber,
+            isLockedByCurrentUser: req.user ? l.userId.toString() === req.user._id.toString() : false
+        }));
+        
+        res.status(200).json({
+            bookedSeats,
+            lockedSeats
+        });
+    } catch (error) {
+        console.error('Error fetching seat status:', error);
+        res.status(500).json({ error: 'Failed to fetch seat status' });
+    }
+}
+
+module.exports = { 
+    handleCreateBooking, 
+    verifyPayment, 
+    createBooking, 
+    getShowBooking, 
+    getUserBookings,
+    lockSeats,
+    unlockSeats,
+    getLockedAndBookedSeats
+};

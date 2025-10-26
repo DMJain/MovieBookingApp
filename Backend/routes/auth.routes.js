@@ -7,5 +7,6 @@ router.post('/sign-up', authController.handleSignup)
 router.post('/sign-in', authController.handleSignin)
 
 router.get('/me', authController.handleMe)
+router.put('/update-profile', authController.handleUpdateProfile)
 
 module.exports = router

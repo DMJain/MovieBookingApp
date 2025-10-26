@@ -1,10 +1,9 @@
 import { useSelector, useDispatch } from 'react-redux';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { load } from '@cashfreepayments/cashfree-js';
 import { apiInstance } from '../../api';
-import { useEffect } from 'react';
 import { setOrderID } from '../../store/slices/bookingSlice';
 
 const CheckOutPage = () => {
@@ -24,6 +23,14 @@ var initializeSDK = async function () {
 initializeSDK();
 
   useEffect(() => {
+    // Check if user is authenticated
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert('You need to be logged in to access the checkout page. Please sign in to continue.');
+      navigate('/sign-in', { state: { returnUrl: '/checkout' } });
+      return;
+    }
+
     if (booking.selectedSeats.length === 0) {
       navigate('/explore');
     }
@@ -35,7 +42,7 @@ initializeSDK();
     }
 
     setConvenienceFees(30);
-  }, []);
+  }, [booking.selectedSeats.length, movie._id, hall.showId, navigate]);
 
   const orderIdRef = useRef('');
 
@@ -59,6 +66,16 @@ initializeSDK();
       }
     } catch (error) {
       console.log(error);
+      if (error.response?.status === 401) {
+        alert('You need to be logged in to complete this booking. Please sign in to continue.');
+        navigate('/sign-in', { state: { returnUrl: '/checkout' } });
+      } else if (error.response?.status === 409) {
+        alert('Selected seats are no longer available. Returning to seat selection.');
+        navigate(-1);
+      } else {
+        alert('Unable to initiate payment. Please try again.');
+      }
+      throw error;
     }
   };
 
@@ -101,135 +118,176 @@ initializeSDK();
   };
 
   return (
-    <div className="flex justify-center items-center p-4">
-      <div className="w-1/2 flex flex-col gap-4 p-3">
-        <div>
-          <div className="border rounded-xl border-secondary shadow-lg flex gap-5">
-            <div className="w-6/12 flex justify-center items-center bg-primary p-5 rounded-xl">
-              <div className="h-80 w-56 rounded-xl">
-                <img
-                  src={movie.imageURL}
-                  alt=""
-                  className="object-fill w-full h-full rounded-xl"
-                />
-              </div>
-            </div>
-            <div className="flex flex-col gap-5 w-full p-5">
-              <div>
-                <h1 className="text-6xl">{movie.title}</h1>
-              </div>
-              <div className="flex gap-2">
-                <div className="badge badge-primary badge-outline">
-                  {movie.language}
-                </div>
-                <div className="badge badge-primary badge-outline">
-                  {movie.durationInMinutes} min
-                </div>
-              </div>
-              <div>
-                <div>
-                  <h1 className="text-3xl">Theatre : {hall.theatreName}</h1>
-                </div>
-              </div>
-              <div className="flex w-full">
-                <div className="w-6/12">
-                  <h1 className="text-3xl">Date: {hall.showDate}</h1>
-                </div>
-                <div className="w-6/12">
-                  <h1 className="text-3xl">Time:{hall.showTiming}</h1>
-                </div>
-              </div>
-              <div className="text-3xl">
-                Seat Number/s :
-                <div className="flex gap-2">
-                  {booking.selectedSeats.map((seat, index) => (
-                    <div key={index} className="">
-                      {seat}
+    <div className="min-h-screen bg-base-100 p-6">
+      <div className="max-w-5xl mx-auto">
+        <div className="mb-6">
+          <h1 className="text-4xl font-bold">Checkout</h1>
+          <p className="text-base-content/70 mt-2">Review your booking details and complete payment</p>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Booking Details - Left Column */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Movie & Theatre Info Card */}
+            <div className="card bg-base-100 shadow-xl">
+              <div className="card-body">
+                <h2 className="card-title text-2xl mb-4">Booking Details</h2>
+                <div className="flex flex-col md:flex-row gap-6">
+                  {/* Movie Poster */}
+                  <div className="avatar">
+                    <div className="w-40 rounded-xl shadow-lg">
+                      <img
+                        src={movie.imageURL}
+                        alt={movie.title}
+                      />
                     </div>
-                  ))}
+                  </div>
+
+                  {/* Movie Details */}
+                  <div className="flex-1 space-y-3">
+                    <h3 className="text-3xl font-bold">{movie.title}</h3>
+                    
+                    <div className="flex flex-wrap gap-2">
+                      <div className="badge badge-primary badge-lg">
+                        {movie.language}
+                      </div>
+                      <div className="badge badge-secondary badge-lg">
+                        {movie.durationInMinutes} min
+                      </div>
+                    </div>
+
+                    <div className="divider my-2"></div>
+
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-primary">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+                        </svg>
+                        <span className="font-semibold">Theatre:</span>
+                        <span>{hall.theatreName}</span>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-secondary">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+                        </svg>
+                        <span className="font-semibold">Date:</span>
+                        <span>{hall.showDate}</span>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-accent">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span className="font-semibold">Time:</span>
+                        <span>{hall.showTiming}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Selected Seats */}
+                <div className="divider"></div>
+                <div>
+                  <h4 className="font-semibold mb-2 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75m-16.5-3.75v3.75m16.5 0v3.75C20.25 16.153 16.556 18 12 18s-8.25-1.847-8.25-4.125v-3.75m16.5 0c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125" />
+                    </svg>
+                    Selected Seats ({booking.selectedSeats.length})
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {booking.selectedSeats.map((seat, index) => (
+                      <div key={index} className="badge badge-lg badge-primary">
+                        Seat {seat}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-        <div className="divider divider-accent"></div>
-        <div>
-          <div className="">
-            <div>
-              <h1 className="text-3xl">Booking Summary</h1>
-            </div>
-            <div className="flex items-center flex-col p-3">
-              <div className="w-1/2 flex flex-col gap-1">
-                <div className="flex justify-between">
-                  <div className="text-xl font-medium">
-                    Ticket Price for {booking.selectedSeats.length}:
+
+          {/* Payment Summary - Right Column */}
+          <div className="lg:col-span-1">
+            <div className="card bg-base-100 shadow-xl sticky top-6">
+              <div className="card-body">
+                <h2 className="card-title text-xl mb-4">Payment Summary</h2>
+                
+                <div className="space-y-3">
+                  {/* Ticket Price */}
+                  <div className="flex justify-between items-center">
+                    <span className="text-base-content/70">
+                      Ticket Price × {booking.selectedSeats.length}
+                    </span>
+                    <span className="font-semibold">
+                      ₹{Number.parseFloat(booking.totalPrice).toFixed(2)}
+                    </span>
                   </div>
-                  <div>
-                    {Number.parseFloat(booking.totalPrice).toFixed(2)} INR
-                  </div>
-                </div>
-                <div>
-                  <details className="collapse rounded-none">
-                    <summary>
-                      <div className="flex justify-between">
-                        <div className="text-xl font-medium hover:cursor-pointer">
-                          Convenience fees …
-                        </div>
-                        <div>
-                          {Number.parseFloat(
+
+                  {/* Convenience Fees with Collapse */}
+                  <div className="collapse collapse-arrow bg-base-200 rounded-lg">
+                    <input type="checkbox" /> 
+                    <div className="collapse-title font-medium px-4 py-3 min-h-0">
+                      <div className="flex justify-between items-center">
+                        <span className="text-base-content/70">Convenience Fees</span>
+                        <span className="font-semibold">
+                          ₹{Number.parseFloat(
                             convenienceFees + convenienceFees * 0.18
-                          ).toFixed(2)}{' '}
-                          INR
-                        </div>
+                          ).toFixed(2)}
+                        </span>
                       </div>
-                    </summary>
-                    <div className="collapse-content text-slate-500">
-                      <div className="flex justify-between">
-                        <div>Base Fee :</div>
-                        <div>
-                          {Number.parseFloat(convenienceFees).toFixed(2)} INR
+                    </div>
+                    <div className="collapse-content px-4">
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span>Base Fee</span>
+                          <span>₹{Number.parseFloat(convenienceFees).toFixed(2)}</span>
                         </div>
-                      </div>
-                      <div className="flex justify-between">
-                        <div>
-                          cGST <span className="text-xs">@9%</span> :
+                        <div className="flex justify-between">
+                          <span>CGST (9%)</span>
+                          <span>₹{Number.parseFloat(convenienceFees * 0.09).toFixed(2)}</span>
                         </div>
-                        <div>
-                          {Number.parseFloat(convenienceFees * 0.09).toFixed(2)}{' '}
-                          INR
-                        </div>
-                      </div>
-                      <div className="flex justify-between">
-                        <div>
-                          sGST <span className="text-xs">@9%</span> :
-                        </div>
-                        <div>
-                          {Number.parseFloat(convenienceFees * 0.09).toFixed(2)}{' '}
-                          INR
+                        <div className="flex justify-between">
+                          <span>SGST (9%)</span>
+                          <span>₹{Number.parseFloat(convenienceFees * 0.09).toFixed(2)}</span>
                         </div>
                       </div>
                     </div>
-                  </details>
-                </div>
-                <div className="flex justify-between mt-2 border-t-2 border-base-200">
-                  <div className="text-xl font-medium">TOTAL :</div>
-                  <div>
-                    {Number.parseFloat(
-                      booking.totalPrice +
-                        (convenienceFees + convenienceFees * 0.18)
-                    ).toFixed(2)}{' '}
-                    INR
+                  </div>
+
+                  <div className="divider my-2"></div>
+
+                  {/* Total */}
+                  <div className="flex justify-between items-center text-lg font-bold">
+                    <span>Total Amount</span>
+                    <span className="text-primary text-2xl">
+                      ₹{Number.parseFloat(
+                        booking.totalPrice +
+                          (convenienceFees + convenienceFees * 0.18)
+                      ).toFixed(2)}
+                    </span>
                   </div>
                 </div>
-                <div className="flex justify-center w-full">
-                  <div>
-                    <button
-                      className="btn btn-primary w-28 text-xl "
-                      onClick={(e) => handlePayment(e)}
-                    >
-                      Pay
-                    </button>
-                  </div>
+
+                <div className="divider"></div>
+
+                {/* Payment Button */}
+                <button
+                  className="btn btn-primary btn-lg w-full gap-2"
+                  onClick={(e) => handlePayment(e)}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+                  </svg>
+                  Proceed to Pay
+                </button>
+
+                {/* Security Info */}
+                <div className="alert alert-info mt-4">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="stroke-current shrink-0 w-6 h-6">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  <span className="text-xs">Your payment is secured by Cashfree Payments</span>
                 </div>
               </div>
             </div>

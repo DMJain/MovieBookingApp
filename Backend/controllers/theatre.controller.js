@@ -1,4 +1,5 @@
 const TheatreService = require('../services/theatre.service')
+const TheatreReview = require('../models/theatre-review.model')
 const {
   createTheatreValidationSchema,
   createTheatreHallSchema,
@@ -96,6 +97,53 @@ async function listShowsByMovieIdAndCity(req, res) {
   return res.status(200).json({ data: shows })
 }
 
+async function getTheatreReviews(req, res) {
+  try {
+    const { theatreId } = req.params
+    const reviews = await TheatreReview.find({ theatreId })
+      .populate('userId', 'firstname lastname')
+      .sort({ createdAt: -1 })
+    
+    return res.json({ status: 'success', data: reviews })
+  } catch (error) {
+    return res.status(500).json({ error: error.message })
+  }
+}
+
+async function createTheatreReview(req, res) {
+  try {
+    const { theatreId, rating, review, categories } = req.body
+    const userId = req.user._id
+
+    // Check if user already reviewed this theatre
+    const existingReview = await TheatreReview.findOne({ theatreId, userId })
+    if (existingReview) {
+      return res.status(400).json({ 
+        error: 'You have already reviewed this theatre' 
+      })
+    }
+
+    const newReview = await TheatreReview.create({
+      theatreId,
+      userId,
+      rating,
+      review,
+      categories,
+      isVerifiedBooking: false // You can enhance this to check actual bookings
+    })
+
+    const populatedReview = await TheatreReview.findById(newReview._id)
+      .populate('userId', 'firstname lastname')
+
+    return res.status(201).json({ 
+      status: 'success', 
+      data: populatedReview 
+    })
+  } catch (error) {
+    return res.status(500).json({ error: error.message })
+  }
+}
+
 module.exports = {
   getAllTheatres,
   createTheatre,
@@ -105,4 +153,6 @@ module.exports = {
   createShow,
   listShowsByMovieId,
   listShowsByMovieIdAndCity,
+  getTheatreReviews,
+  createTheatreReview,
 }

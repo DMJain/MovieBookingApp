@@ -146,6 +146,34 @@ async function createMovie(req, res) {
   return res.status(201).json({ status: 'success', data: movie })
 }
 
+async function getPersonById(req, res) {
+  try {
+    const { id } = req.params
+    const person = await Person.findById(id)
+    
+    if (!person) {
+      return res.status(404).json({ error: 'Person not found' })
+    }
+    
+    return res.json({ status: 'success', data: person })
+  } catch (error) {
+    return res.status(500).json({ error: error.message })
+  }
+}
+
+async function getMoviesByPerson(req, res) {
+  try {
+    const { id } = req.params
+    const movieRoles = await MovieRoleMapping.find({ personId: id })
+      .populate('movieId')
+      .sort({ 'movieId.releaseDate': -1 })
+    
+    return res.json({ status: 'success', data: movieRoles })
+  } catch (error) {
+    return res.status(500).json({ error: error.message })
+  }
+}
+
 module.exports = { 
   getAllMovies, 
   createMovie, 
@@ -155,5 +183,7 @@ module.exports = {
   getMovieRoles,
   getCriticReviews,
   getMovieReviews,
-  createMovieReview
+  createMovieReview,
+  getPersonById,
+  getMoviesByPerson
 }

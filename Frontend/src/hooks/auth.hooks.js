@@ -53,3 +53,21 @@ export const useLoggedInUser = () => {
   });
   return query;
 };
+
+export const useUpdateProfile = () => {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: async ({ firstname, lastname }) => {
+      const { data } = await apiInstance.put("/auth/update-profile", {
+        firstname,
+        lastname,
+      });
+      return data.data.user;
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["user"] });
+    },
+  });
+  return mutation;
+};

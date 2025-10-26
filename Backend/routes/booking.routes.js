@@ -10,5 +10,9 @@ router.post('/create', controller.handleCreateBooking)
 router.post('/verify-payment', controller.verifyPayment)
 router.post('/createBooking', controller.createBooking)
 router.post('/show', controller.getShowBooking)
+router.get('/my-bookings', controller.getUserBookings)
+router.post('/lock-seats', controller.lockSeats)
+router.post('/unlock-seats', controller.unlockSeats)
+router.post('/seat-status', controller.getLockedAndBookedSeats)
 
 module.exports = router

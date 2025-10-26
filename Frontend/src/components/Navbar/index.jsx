@@ -19,7 +19,6 @@ const Navbar = () => {
       const long = position.coords.longitude;
       fetch(
         `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${long}`
-
       )
         .then((res) => res.json())
         .then((data) => {
@@ -56,6 +55,10 @@ const Navbar = () => {
     navigate('/');
   };
 
+  const toExplore = () => {
+    navigate('/explore');
+  };
+
   const handleLogOut = () => {
     localStorage.removeItem('token');
     setIsLoggedOut(true);
@@ -73,102 +76,147 @@ const Navbar = () => {
     setCity(city);
   }
 
-  console.log(location.custome)
-
-  // console.log('logged IN',isLoggedOut);
-  // console.log('user',user,'isLoading', isLoading);
-
   return (
-    <div className="navbar bg-base-100 border-b-2 border-secondary">
+    <div className="navbar bg-base-100 shadow-md sticky top-0 z-50">
       <div className="navbar-start">
-        <a className="btn btn-ghost" onClick={toHome}>
-          <span className="text-4xl underline decoration-primary">
-            Movie<span className="text-primary">DéKHLé</span>
-          </span>
+        {/* Mobile Menu Dropdown */}
+        <div className="dropdown lg:hidden">
+          <div tabIndex={0} role="button" className="btn btn-ghost">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M4 6h16M4 12h8m-8 6h16" />
+            </svg>
+          </div>
+          <ul
+            tabIndex={0}
+            className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow">
+            <li><a onClick={toHome}>Home</a></li>
+            <li><a onClick={toExplore}>Explore</a></li>
+            <li><a>About</a></li>
+          </ul>
+        </div>
+
+        {/* Logo */}
+        <a className="btn btn-ghost text-xl" onClick={toHome}>
+          CineVerse
         </a>
       </div>
-      {/* <div className="navbar-center">
-        <label className="input input-bordered flex items-center gap-2 rounded-full">
-          <input
-            type="text"
-            className="grow rounded-full"
-            placeholder="Search"
-          />
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 16 16"
-            fill="currentColor"
-            className="h-4 w-4 opacity-70"
-          >
-            <path
-              fillRule="evenodd"
-              d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z"
-              clipRule="evenodd"
-            />
-          </svg>
-        </label>
-      </div> */}
 
-      <div className="navbar-end">
-        <div>
-          <ul className="menu menu-horizontal w-44">
+      {/* Desktop Menu */}
+      <div className="navbar-center hidden lg:flex">
+        <ul className="menu menu-horizontal px-1">
+          <li><a onClick={toHome}>Home</a></li>
+          <li><a onClick={toExplore}>Explore</a></li>
+          <li><a>About</a></li>
+        </ul>
+      </div>
+
+      {/* End Section */}
+      <div className="navbar-end gap-2">
+        {/* Location Dropdown */}
+        <div className="dropdown dropdown-end">
+          <div tabIndex={0} role="button" className="btn btn-ghost btn-sm">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            <span className="hidden md:inline">{city || 'Location'}</span>
+          </div>
+          <ul
+            tabIndex={0}
+            className="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow">
             <li>
-              <details>
-                <summary>{city}</summary>
-                <ul className="p-1 ">
-                  <li>
-                    <a>
-                      <label className="flex items-center">
-                        <input
-                          type="text"
-                          className="w-24 bg-base-100 border-b-2"
-                          placeholder="Search"
-                          onChange={(e) => searchCity.current = e.target.value}
-                          onKeyDown={(e) => e.key === 'Enter' && handleCustomLocation(searchCity.current)}
-                        />
-                        <span className="" onClick={() => handleCustomLocation(searchCity.current)}>→</span>
-                      </label>
-                    </a>
-                  </li>
-                  <li >
-                    <a onClick={handleLocation}>Current</a>
-                  </li>
-                </ul>
-              </details>
+              <div className="form-control">
+                <label className="input-group input-group-sm">
+                  <input
+                    type="text"
+                    placeholder="Search city"
+                    className="input input-bordered input-sm w-full"
+                    onChange={(e) => searchCity.current = e.target.value}
+                    onKeyDown={(e) => e.key === 'Enter' && handleCustomLocation(searchCity.current)}
+                  />
+                  <button
+                    className="btn btn-sm btn-square"
+                    onClick={() => handleCustomLocation(searchCity.current)}>
+                    →
+                  </button>
+                </label>
+              </div>
+            </li>
+            <li>
+              <a onClick={handleLocation}>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M12 11c0 1.105-.895 2-2 2s-2-.895-2-2 .895-2 2-2 2 .895 2 2zm0-7v.01M12 12v6m0 0l-3-3m3 3l3-3" />
+                </svg>
+                Use Current Location
+              </a>
             </li>
           </ul>
         </div>
 
+        {/* User Menu or Sign In */}
         {isLoggedOut ? (
           <div className="dropdown dropdown-end">
             <div
               tabIndex={0}
               role="button"
-              className="btn btn-ghost btn-circle avatar"
-            >
+              className="btn btn-ghost btn-circle avatar">
               <div className="w-10 rounded-full">
                 <img
-                  alt="Tailwind CSS Navbar component"
+                  alt="User avatar"
                   src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp"
                 />
               </div>
             </div>
             <ul
               tabIndex={0}
-              className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow"
-            >
+              className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow">
               <li>
-                <a onClick={handleLogOut}>Logout</a>
+                <a className="justify-between">
+                  Profile
+                  <span className="badge">New</span>
+                </a>
               </li>
+              <li><a onClick={() => navigate('/userDashboard')}>My Bookings</a></li>
+              <li><a>Settings</a></li>
+              <li><a onClick={handleLogOut}>Logout</a></li>
             </ul>
           </div>
         ) : (
           <button
-            className="btn btn-outline btn-primary"
-            onClick={handleSignIN}
-          >
-            {' '}
-            SIGN IN
+            className="btn btn-primary"
+            onClick={handleSignIN}>
+            Sign In
           </button>
         )}
       </div>
