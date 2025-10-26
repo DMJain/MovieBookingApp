@@ -6,6 +6,7 @@
   "scripts": {
     "start": "dotenv -- node index",
     "dev": "dotenv -- nodemon index",
+    "seed": "node seeds/seed-all.js",
     "seed:reviews": "dotenv -- node seeds/seed-reviews.js",
     "migrate:passwords": "dotenv -- node scripts/migrate-passwords.js",
     "security:audit": "npm audit",

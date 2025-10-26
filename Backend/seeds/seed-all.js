@@ -2,7 +2,15 @@
 // Run this script to seed the entire database with all necessary data
 
 const path = require('path');
-require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
+
+// Load dotenv only if .env file exists (for local development)
+try {
+  require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
+} catch (err) {
+  // In Docker, environment variables are passed directly
+  console.log('Running in Docker environment - using passed environment variables');
+}
+
 const mongoose = require('mongoose');
 
 // Import models

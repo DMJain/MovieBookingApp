@@ -2,7 +2,14 @@
 // This creates bookings across multiple months with varying patterns
 
 const path = require('path');
-require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
+
+// Load dotenv only if .env file exists (for local development)
+try {
+  require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
+} catch (err) {
+  // In Docker, environment variables are passed directly
+}
+
 const mongoose = require('mongoose');
 
 const Booking = require('../models/booking.model');
