@@ -2,6 +2,9 @@ const {
     bookingCreationValidationSchema,
     verifyPaymentValidationSchema,
     createBookingValidationSchema,
+    lockSeatsValidationSchema,
+    unlockSeatsValidationSchema,
+    seatStatusValidationSchema,
 } = require('../lib/validators/booking.validator');
 const Show = require('../models/theatre-hall-movie-mapping');
 const User = require('../models/user.model');
@@ -269,11 +272,11 @@ async function getUserBookings(req, res) {
 async function lockSeats(req, res) {
     if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
     
-    const { showId, seatNumbers } = req.body;
+    const validationResult = await lockSeatsValidationSchema.safeParseAsync(req.body);
+    if (validationResult.error)
+        return res.status(400).json({ error: validationResult.error.errors });
     
-    if (!showId || !Array.isArray(seatNumbers) || seatNumbers.length === 0) {
-        return res.status(400).json({ error: 'Invalid request. showId and seatNumbers are required.' });
-    }
+    const { showId, seatNumbers } = validationResult.data;
     
     const userId = req.user._id;
     const lockDuration = 10 * 60 * 1000; // 10 minutes in milliseconds
@@ -356,11 +359,11 @@ async function lockSeats(req, res) {
 async function unlockSeats(req, res) {
     if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
     
-    const { showId, seatNumbers } = req.body;
+    const validationResult = await unlockSeatsValidationSchema.safeParseAsync(req.body);
+    if (validationResult.error)
+        return res.status(400).json({ error: validationResult.error.errors });
     
-    if (!showId) {
-        return res.status(400).json({ error: 'showId is required' });
-    }
+    const { showId, seatNumbers } = validationResult.data;
     
     const userId = req.user._id;
     
@@ -409,11 +412,11 @@ async function unlockSeats(req, res) {
 }
 
 async function getLockedAndBookedSeats(req, res) {
-    const { showId } = req.body;
+    const validationResult = await seatStatusValidationSchema.safeParseAsync(req.body);
+    if (validationResult.error)
+        return res.status(400).json({ error: validationResult.error.errors });
     
-    if (!showId) {
-        return res.status(400).json({ error: 'showId is required' });
-    }
+    const { showId } = validationResult.data;
     
     try {
         // Get booked seats

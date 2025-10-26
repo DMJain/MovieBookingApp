@@ -1,7 +1,29 @@
 const crypto = require('crypto')
+const bcrypt = require('bcrypt')
+
+const SALT_ROUNDS = 12
 
 /**
- * @function hash
+ * @function hashPassword
+ * @param {string} password
+ * @return {Promise<string>} Hashed password
+ */
+async function hashPassword(password) {
+  return await bcrypt.hash(password, SALT_ROUNDS)
+}
+
+/**
+ * @function comparePassword
+ * @param {string} password
+ * @param {string} hashedPassword
+ * @return {Promise<boolean>} Returns true if password matches
+ */
+async function comparePassword(password, hashedPassword) {
+  return await bcrypt.compare(password, hashedPassword)
+}
+
+/**
+ * @function hash (Legacy - kept for backward compatibility)
  * @param {string} data
  * @param {string} salt
  * @param {string} algorithm
@@ -21,5 +43,7 @@ function createId(algorithm = 'sha256') {
 
 module.exports = {
   hash,
+  hashPassword,
+  comparePassword,
   createId,
 }

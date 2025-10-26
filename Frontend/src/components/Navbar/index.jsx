@@ -3,6 +3,7 @@ import { useLoggedInUser } from '../../hooks/auth.hooks';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { setLocation, setCustomeLocation } from '../../store/slices/locationSlice';
+import { clearAuthData } from '../../utils/secureStorage';
 
 const Navbar = () => {
   const { data: user, isLoading } = useLoggedInUser();
@@ -60,7 +61,7 @@ const Navbar = () => {
   };
 
   const handleLogOut = () => {
-    localStorage.removeItem('token');
+    clearAuthData();
     setIsLoggedOut(true);
     navigate('/');
     window.location.reload();

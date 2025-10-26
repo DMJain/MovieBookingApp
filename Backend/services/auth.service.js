@@ -1,10 +1,11 @@
 const crypto = require('crypto')
 const JWT = require('jsonwebtoken')
 const User = require('../models/user.model')
-const { hash } = require('../utils/hash')
+const { hashPassword, comparePassword } = require('../utils/hash')
 const AppError = require('../errors/app.error')
 
 const JWT_SECRET = process.env.JWT_SECRET
+const JWT_EXPIRATION = process.env.JWT_EXPIRATION || '7d'
 
 if (!JWT_SECRET || JWT_SECRET === '')
   throw new Error(`JWT_SECRET env is required`)
@@ -16,7 +17,7 @@ class AuthService {
    * @returns { string } JWT signed token
    */
   static generateUserToken(payload) {
-    const token = JWT.sign(payload, JWT_SECRET)
+    const token = JWT.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRATION })
     return token
   }
 
@@ -28,15 +29,14 @@ class AuthService {
   static async signupWithEmailAndPassword(data) {
     const { firstname, lastname, email, password } = data
 
-    const salt = crypto.randomBytes(26).toString('hex')
-
     try {
+      const hashedPassword = await hashPassword(password)
+      
       const user = await User.create({
         firstname,
         lastname,
         email,
-        salt,
-        password: hash(password, salt),
+        password: hashedPassword,
       })
 
       const token = AuthService.generateUserToken({
@@ -62,7 +62,9 @@ class AuthService {
 
     if (!user) throw new AppError(`User with email ${email} does not exists!`)
 
-    if (hash(password, user.salt) !== user.password)
+    const isPasswordValid = await comparePassword(password, user.password)
+    
+    if (!isPasswordValid)
       throw new AppError(`Invalid email id or password`)
 
     const token = AuthService.generateUserToken({
